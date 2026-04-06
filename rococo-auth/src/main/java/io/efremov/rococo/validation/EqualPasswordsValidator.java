@@ -8,6 +8,9 @@ public class EqualPasswordsValidator implements ConstraintValidator<EqualPasswor
 
   @Override
   public boolean isValid(RegistrationForm form, ConstraintValidatorContext context) {
+    if (form.password() == null || form.passwordSubmit() == null) {
+      return false;
+    }
     boolean isValid = form.password().equals(form.passwordSubmit());
     if (!isValid) {
       context.disableDefaultConstraintViolation();

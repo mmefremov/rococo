@@ -44,7 +44,7 @@ public class GlobalExceptionHandler {
     }
 
     model.addAttribute("status", statusCode);
-    model.addAttribute("error", httpStatus.getReasonPhrase());
+    model.addAttribute(ERROR_VIEW_NAME, httpStatus.getReasonPhrase());
     model.addAttribute("message", ex.getMessage());
     model.addAttribute("path", request.getRequestURI());
     model.addAttribute("frontUri", frontUri);

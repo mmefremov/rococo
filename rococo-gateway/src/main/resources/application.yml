@@ -4,47 +4,73 @@ server:
 spring:
   application:
     name: rococo-gateway
+  autoconfigure:
+    exclude:
+      - org.springframework.boot.autoconfigure.orm.jpa.HibernateJpaAutoConfiguration
+      - org.springframework.boot.autoconfigure.jdbc.DataSourceAutoConfiguration
+      - org.springframework.boot.autoconfigure.sql.init.SqlInitializationAutoConfiguration
   security:
     oauth2:
       resourceserver:
         jwt:
           issuer-uri: 'http://localhost:9000'
-  datasource:
-    url: 'jdbc:postgresql://localhost:5432/rococo_gateway'
-    username: postgres
-    password: secret
-    hikari:
-      connection-timeout: 20000
-      minimum-idle: 10
-      maximum-pool-size: 30
-      idle-timeout: 10000
-      max-lifetime: 1000
-      auto-commit: true
-  flyway:
-    enabled: true
-    baseline-on-migrate: true
-    baseline-version: 0
-    schemas: rococo-gateway
-    locations: classpath:db/migration/rococo-gateway
-  jpa:
-    hibernate:
-      ddl-auto: none
-    properties:
-      hibernate:
-        jdbc:
-          lob:
-            non_contextual_creation: true
-    database-platform: org.hibernate.dialect.PostgreSQLDialect
-    show-sql: false
-    generate-ddl: true
-    open-in-view: false
+
+grpc:
+  client:
+    userdata:
+      address: 'static://localhost:8092'
+      negotiation-type: PLAINTEXT
+    geo:
+      address: 'static://localhost:8094'
+      negotiation-type: PLAINTEXT
+    artist:
+      address: 'static://localhost:8096'
+      negotiation-type: PLAINTEXT
+    museum:
+      address: 'static://localhost:8098'
+      negotiation-type: PLAINTEXT
+    painting:
+      address: 'static://localhost:8100'
+      negotiation-type: PLAINTEXT
 
 logging:
   level:
     root: INFO
+    io.efremov.rococo: DEBUG
     org.springframework.web: DEBUG
     org.springframework.security: DEBUG
     org.springframework.security.oauth2: DEBUG
 
 rococo-front:
   base-uri: 'http://localhost:3000'
+---
+spring:
+  config:
+    activate:
+      on-profile: 'docker'
+  security:
+    oauth2:
+      resourceserver:
+        jwt:
+          issuer-uri: 'http://rococo-auth:9000'
+
+grpc:
+  client:
+    userdata:
+      address: 'static://rococo-userdata:8092'
+      negotiation-type: PLAINTEXT
+    geo:
+      address: 'static://rococo-geo:8094'
+      negotiation-type: PLAINTEXT
+    artist:
+      address: 'static://rococo-artist:8096'
+      negotiation-type: PLAINTEXT
+    museum:
+      address: 'static://rococo-museum:8098'
+      negotiation-type: PLAINTEXT
+    painting:
+      address: 'static://rococo-painting:8100'
+      negotiation-type: PLAINTEXT
+
+rococo-front:
+  base-uri: 'http://rococo-client'

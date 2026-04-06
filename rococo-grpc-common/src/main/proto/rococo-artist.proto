@@ -1,0 +1,58 @@
+syntax = "proto3";
+
+package rococo;
+
+option java_package = "io.efremov.rococo.grpc";
+option java_multiple_files = true;
+
+service ArtistService {
+  rpc GetAllArtists (ArtistPageRequest) returns (ArtistPageResponse);
+  rpc GetArtistById (ArtistByIdRequest) returns (ArtistsResponse);
+  rpc CreateArtist (CreateArtistRequest) returns (ArtistResponse);
+  rpc UpdateArtist (UpdateArtistRequest) returns (ArtistResponse);
+}
+
+message ArtistResponse {
+  string id = 1;
+  string name = 2;
+  string biography = 3;
+  string photo = 4;
+}
+
+message ArtistPageRequest {
+  int32 page = 1;
+  int32 size = 2;
+  optional string name = 3;
+}
+
+message ArtistPageResponse {
+  repeated ArtistResponse content = 1;
+  int32 total_elements = 2;
+  int32 total_pages = 3;
+  int32 page_number = 4;
+  int32 page_size = 5;
+  bool last = 6;
+  bool first = 7;
+  int32 number_of_elements = 8;
+}
+
+message ArtistByIdRequest {
+  repeated string id = 1;
+}
+
+message ArtistsResponse {
+  repeated ArtistResponse artists = 1;
+}
+
+message CreateArtistRequest {
+  string name = 1;
+  string biography = 2;
+  string photo = 3;
+}
+
+message UpdateArtistRequest {
+  string id = 1;
+  string name = 2;
+  string biography = 3;
+  string photo = 4;
+}

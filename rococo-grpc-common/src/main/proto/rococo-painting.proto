@@ -1,0 +1,76 @@
+syntax = "proto3";
+
+package rococo;
+
+option java_package = "io.efremov.rococo.grpc";
+option java_multiple_files = true;
+
+service PaintingService {
+  rpc GetAllPaintings (PaintingPageRequest) returns (PaintingPageResponse);
+  rpc GetPaintingById (PaintingByIdRequest) returns (PaintingResponse);
+  rpc GetPaintingsByIds (PaintingsByIdRequest) returns (PaintingsResponse);
+  rpc GetPaintingsByArtist (PaintingByArtistRequest) returns (PaintingPageResponse);
+  rpc CreatePainting (CreatePaintingRequest) returns (PaintingResponse);
+  rpc UpdatePainting (UpdatePaintingRequest) returns (PaintingResponse);
+}
+
+message PaintingResponse {
+  string id = 1;
+  string title = 2;
+  string description = 3;
+  string content = 4;
+  string artist_id = 5;
+  optional string museum_id = 6;
+}
+
+message PaintingPageRequest {
+  int32 page = 1;
+  int32 size = 2;
+  optional string title = 3;
+}
+
+message PaintingByArtistRequest {
+  string artist_id = 1;
+  int32 page = 2;
+  int32 size = 3;
+}
+
+message PaintingPageResponse {
+  repeated PaintingResponse content = 1;
+  int32 total_elements = 2;
+  int32 total_pages = 3;
+  int32 page_number = 4;
+  int32 page_size = 5;
+  bool last = 6;
+  bool first = 7;
+  int32 number_of_elements = 8;
+}
+
+message PaintingByIdRequest {
+  string id = 1;
+}
+
+message PaintingsByIdRequest {
+  repeated string id = 1;
+}
+
+message PaintingsResponse {
+  repeated PaintingResponse paintings = 1;
+}
+
+message CreatePaintingRequest {
+  string title = 1;
+  string description = 2;
+  string content = 3;
+  string artist_id = 4;
+  optional string museum_id = 5;
+}
+
+message UpdatePaintingRequest {
+  string id = 1;
+  string title = 2;
+  string description = 3;
+  string content = 4;
+  string artist_id = 5;
+  optional string museum_id = 6;
+}

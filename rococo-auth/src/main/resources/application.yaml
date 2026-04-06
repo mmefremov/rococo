@@ -46,7 +46,7 @@ spring:
               access-token-time-to-live: 1800
               authorization-code-time-to-live: 1800
   datasource:
-    url: 'jdbc:postgresql://localhost:5432/rococo_auth'
+    url: 'jdbc:postgresql://localhost:6432/rococo_auth'
     username: postgres
     password: secret
     hikari:
@@ -60,7 +60,6 @@ spring:
     enabled: true
     baseline-on-migrate: true
     baseline-version: 0
-    schemas: rococo-auth
     locations: classpath:db/migration/rococo-auth
   jpa:
     hibernate:
@@ -70,10 +69,17 @@ spring:
         jdbc:
           lob:
             non_contextual_creation: true
-    database-platform: org.hibernate.dialect.PostgreSQLDialect
     show-sql: false
     generate-ddl: true
     open-in-view: false
+
+  kafka:
+    bootstrap-servers: 'localhost:9092'
+    producer:
+      key-serializer: org.apache.kafka.common.serialization.StringSerializer
+      value-serializer: org.apache.kafka.common.serialization.StringSerializer
+      retries: 3
+      acks: '1'
 
 logging:
   level:
@@ -86,3 +92,30 @@ rococo-front:
   base-uri: 'http://localhost:3000'
 rococo-auth:
   base-uri: 'http://localhost:9000'
+---
+spring:
+  config:
+    activate:
+      on-profile: 'docker'
+  datasource:
+    url: 'jdbc:postgresql://rococo-postgres:5432/rococo_auth'
+  kafka:
+    bootstrap-servers: 'rococo-kafka:9093'
+  security:
+    oauth2:
+      authorizationserver:
+        client:
+          oidc-client:
+            registration:
+              redirect-uris:
+                - "http://localhost:3000/authorized"
+                - "http://rococo-client/authorized"
+              post-logout-redirect-uris:
+                - "http://localhost:3000/logout"
+                - "http://rococo-client/logout"
+
+rococo-front:
+  base-uri: 'http://rococo-client'
+  additional-origins: 'http://localhost:3000'
+rococo-auth:
+  base-uri: 'http://rococo-auth:9000'

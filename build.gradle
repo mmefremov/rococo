@@ -9,6 +9,8 @@ allprojects {
 
     repositories {
         mavenCentral()
+        maven { url = 'https://repo.spring.io/milestone' }
+        maven { url = 'https://repo.spring.io/snapshot' }
     }
 
     java {
@@ -16,18 +18,79 @@ allprojects {
             languageVersion = JavaLanguageVersion.of(21)
         }
     }
+
+    compileJava.options.encoding = 'UTF-8'
+
+    tasks.withType(JavaCompile) {
+        options.encoding = 'UTF-8'
+    }
+}
+
+def springGrpcVersion = project.properties['springGrpcVersion'] ?: '0.4.0-SNAPSHOT'
+
+dependencyManagement {
+    imports {
+        mavenBom "org.springframework.grpc:spring-grpc-dependencies:${springGrpcVersion}"
+    }
+}
+
+def dockerServices = ['auth', 'gateway', 'userdata', 'geo', 'artist', 'museum', 'painting']
+
+dockerServices.each { svc ->
+    project(":rococo-${svc}") {
+        afterEvaluate {
+            tasks.named('jar') { enabled = false }
+        }
+    }
+}
+
+tasks.register('dockerBuildAll') {
+    group = 'docker'
+    description = 'Builds Docker images for all services'
+    dependsOn dockerServices.collect { "dockerBuild_${it}" }
+}
+
+dockerServices.each { svc ->
+    tasks.register("dockerBuild_${svc}", Exec) {
+        group = 'docker'
+        dependsOn ":rococo-${svc}:build"
+        commandLine 'docker', 'build',
+                '--build-arg', "SERVICE_NAME=${svc}",
+                '-t', "rococo-${svc}:latest", '.'
+    }
 }
 
 subprojects {
+    configurations.all {
+        resolutionStrategy.eachDependency { DependencyResolveDetails details ->
+            if (details.requested.group == 'io.grpc') {
+                details.useVersion '1.75.0'
+            }
+        }
+    }
+
     ext {
         lombokVersion = '1.18.42'
         postgresDriverVersion = '42.7.7'
         flywayVersion = '11.20.0'
+        grpcVersion = '1.75.0'
+        protobufPluginVersion = '0.9.6'
+        protobufVersion = '4.32.0'
+        grpcSpringBootStarterVersion = '3.1.0.RELEASE'
+        jspecifyVersion = '1.0.0'
+    }
+
+    dependencies {
+        implementation "org.jspecify:jspecify:${jspecifyVersion}"
     }
 
     dependencyManagement {
         imports {
             mavenBom "org.springframework.boot:spring-boot-dependencies:3.5.8"
+            mavenBom "org.springframework.grpc:spring-grpc-dependencies:${springGrpcVersion}"
+        }
+        dependencies {
+            dependency "com.google.protobuf:protobuf-java:${protobufVersion}"
         }
     }
 }

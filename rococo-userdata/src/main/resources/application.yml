@@ -1,0 +1,58 @@
+server:
+  port: 8091
+
+grpc:
+  server:
+    port: 8092
+
+spring:
+  application:
+    name: rococo-userdata
+  datasource:
+    url: 'jdbc:postgresql://localhost:6432/rococo_userdata'
+    username: postgres
+    password: secret
+    hikari:
+      connection-timeout: 20000
+      minimum-idle: 5
+      maximum-pool-size: 20
+      idle-timeout: 10000
+      max-lifetime: 1800000
+      auto-commit: true
+  flyway:
+    enabled: true
+    baseline-on-migrate: true
+    baseline-version: 0
+    locations: classpath:db/migration/rococo-userdata
+  jpa:
+    hibernate:
+      ddl-auto: none
+    properties:
+      hibernate:
+        jdbc:
+          lob:
+            non_contextual_creation: true
+    show-sql: false
+    open-in-view: false
+  kafka:
+    bootstrap-servers: 'localhost:9092'
+    consumer:
+      group-id: rococo-userdata
+      auto-offset-reset: earliest
+      key-deserializer: org.apache.kafka.common.serialization.StringDeserializer
+      value-deserializer: org.apache.kafka.common.serialization.StringDeserializer
+
+logging:
+  level:
+    root: INFO
+    io.efremov.rococo: DEBUG
+    org.springframework.kafka: INFO
+---
+spring:
+  config:
+    activate:
+      on-profile: 'docker'
+  datasource:
+    url: 'jdbc:postgresql://rococo-postgres:5432/rococo_userdata'
+  kafka:
+    bootstrap-servers: 'rococo-kafka:9093'

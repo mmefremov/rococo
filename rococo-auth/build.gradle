@@ -14,13 +14,20 @@ dependencies {
     implementation 'org.springframework.boot:spring-boot-starter-validation'
     implementation "org.flywaydb:flyway-core:${project.ext.flywayVersion}"
     implementation "org.flywaydb:flyway-database-postgresql:${project.ext.flywayVersion}"
+    implementation 'org.springframework.kafka:spring-kafka'
     annotationProcessor "org.projectlombok:lombok:${project.ext.lombokVersion}"
     compileOnly "org.projectlombok:lombok:${project.ext.lombokVersion}"
     runtimeOnly "org.postgresql:postgresql:${project.ext.postgresDriverVersion}"
+
+    testImplementation 'org.springframework.boot:spring-boot-starter-test'
 }
 
 tasks.register('printVersion') {
     doLast {
-        println project.version
+        println version
     }
+}
+
+tasks.named('test') {
+    useJUnitPlatform()
 }

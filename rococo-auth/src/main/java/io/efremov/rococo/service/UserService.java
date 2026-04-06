@@ -4,28 +4,38 @@ import io.efremov.rococo.data.Authority;
 import io.efremov.rococo.data.AuthorityEntity;
 import io.efremov.rococo.data.UserEntity;
 import io.efremov.rococo.data.repository.UserRepository;
-import jakarta.annotation.Nonnull;
+import io.efremov.rococo.kafka.UserRegisteredProducer;
+import lombok.extern.slf4j.Slf4j;
+import org.jspecify.annotations.NonNull;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Component;
 import org.springframework.transaction.annotation.Transactional;
 
+@Slf4j
 @Component
 public class UserService {
 
   private final UserRepository userRepository;
   private final PasswordEncoder passwordEncoder;
+  private final UserRegisteredProducer userRegisteredProducer;
 
   @Autowired
   public UserService(UserRepository userRepository,
-      PasswordEncoder passwordEncoder) {
+      PasswordEncoder passwordEncoder,
+      UserRegisteredProducer userRegisteredProducer) {
     this.userRepository = userRepository;
     this.passwordEncoder = passwordEncoder;
+    this.userRegisteredProducer = userRegisteredProducer;
   }
 
   @Transactional
-  public @Nonnull
-  String registerUser(@Nonnull String username, @Nonnull String password) {
+  public @NonNull String registerUser(@NonNull String username, @NonNull String password) {
+    if (userRepository.findByUsername(username).isPresent()) {
+      throw new DataIntegrityViolationException("Username `" + username + "` already exists");
+    }
+    log.info("Registering new user: {}", username);
     UserEntity userEntity = new UserEntity();
     userEntity.setEnabled(true);
     userEntity.setAccountNonExpired(true);
@@ -40,6 +50,10 @@ public class UserService {
     writeAuthorityEntity.setAuthority(Authority.write);
 
     userEntity.addAuthorities(readAuthorityEntity, writeAuthorityEntity);
-    return userRepository.save(userEntity).getUsername();
+    String savedUsername = userRepository.save(userEntity).getUsername();
+    log.info("User registered successfully: {}", savedUsername);
+
+    userRegisteredProducer.sendUserRegisteredEvent(savedUsername);
+    return savedUsername;
   }
 }

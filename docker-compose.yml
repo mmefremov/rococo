@@ -1,0 +1,260 @@
+services:
+
+  rococo-postgres:
+    image: postgres:15.1
+    container_name: rococo-postgres
+    ports:
+      - "6432:5432"
+    environment:
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: secret
+      POSTGRES_MULTIPLE_DATABASES: rococo_auth,rococo_userdata,rococo_geo,rococo_artist,rococo_museum,rococo_painting
+      TZ: GMT+3
+      PGTZ: GMT+3
+    volumes:
+      - postgres-data:/var/lib/postgresql/data
+      - ./postgres/initdb:/docker-entrypoint-initdb.d
+    healthcheck:
+      test: [ "CMD-SHELL", "pg_isready -U postgres" ]
+      interval: 5s
+      timeout: 5s
+      retries: 10
+    profiles: [ "env" ]
+    restart: unless-stopped
+    networks:
+      - rococo-network
+
+  rococo-kafka:
+    image: confluentinc/cp-kafka:7.8.0
+    container_name: rococo-kafka
+    ports:
+      - "9092:9092"
+    environment:
+      KAFKA_NODE_ID: 1
+      KAFKA_PROCESS_ROLES: broker,controller
+      KAFKA_CONTROLLER_QUORUM_VOTERS: 1@rococo-kafka:29093
+      KAFKA_LISTENERS: PLAINTEXT://0.0.0.0:9092,INTERNAL://0.0.0.0:9093,CONTROLLER://0.0.0.0:29093
+      KAFKA_ADVERTISED_LISTENERS: PLAINTEXT://localhost:9092,INTERNAL://rococo-kafka:9093
+      KAFKA_LISTENER_SECURITY_PROTOCOL_MAP: PLAINTEXT:PLAINTEXT,INTERNAL:PLAINTEXT,CONTROLLER:PLAINTEXT
+      KAFKA_CONTROLLER_LISTENER_NAMES: CONTROLLER
+      KAFKA_INTER_BROKER_LISTENER_NAME: INTERNAL
+      KAFKA_OFFSETS_TOPIC_REPLICATION_FACTOR: 1
+      KAFKA_TRANSACTION_STATE_LOG_REPLICATION_FACTOR: 1
+      KAFKA_TRANSACTION_STATE_LOG_MIN_ISR: 1
+      KAFKA_AUTO_CREATE_TOPICS_ENABLE: true
+      CLUSTER_ID: MkU3OEVBNTcwNTJENDM2Qk
+    healthcheck:
+      test: [ "CMD-SHELL", "kafka-broker-api-versions --bootstrap-server localhost:9092" ]
+      interval: 10s
+      timeout: 10s
+      retries: 10
+    profiles: [ "env" ]
+    restart: unless-stopped
+    networks:
+      - rococo-network
+
+  rococo-auth:
+    image: rococo-auth:latest
+    container_name: rococo-auth
+    ports:
+      - "9000:9000"
+    environment:
+      SPRING_PROFILES_ACTIVE: docker
+    depends_on:
+      rococo-postgres:
+        condition: service_healthy
+      rococo-kafka:
+        condition: service_healthy
+    profiles: [ "modules" ]
+    restart: unless-stopped
+    networks:
+      - rococo-network
+
+  rococo-userdata:
+    image: rococo-userdata:latest
+    container_name: rococo-userdata
+    ports:
+      - "8091:8091"
+      - "8092:8092"
+    environment:
+      SPRING_PROFILES_ACTIVE: docker
+    depends_on:
+      rococo-postgres:
+        condition: service_healthy
+      rococo-kafka:
+        condition: service_healthy
+    profiles: [ "modules" ]
+    restart: unless-stopped
+    networks:
+      - rococo-network
+
+  rococo-geo:
+    image: rococo-geo:latest
+    container_name: rococo-geo
+    ports:
+      - "8093:8093"
+      - "8094:8094"
+    environment:
+      SPRING_PROFILES_ACTIVE: docker
+    depends_on:
+      rococo-postgres:
+        condition: service_healthy
+    profiles: [ "modules" ]
+    restart: unless-stopped
+    networks:
+      - rococo-network
+
+  rococo-artist:
+    image: rococo-artist:latest
+    container_name: rococo-artist
+    ports:
+      - "8095:8095"
+      - "8096:8096"
+    environment:
+      SPRING_PROFILES_ACTIVE: docker
+    depends_on:
+      rococo-postgres:
+        condition: service_healthy
+    profiles: [ "modules" ]
+    restart: unless-stopped
+    networks:
+      - rococo-network
+
+  rococo-museum:
+    image: rococo-museum:latest
+    container_name: rococo-museum
+    ports:
+      - "8097:8097"
+      - "8098:8098"
+    environment:
+      SPRING_PROFILES_ACTIVE: docker
+    depends_on:
+      rococo-postgres:
+        condition: service_healthy
+      rococo-geo:
+        condition: service_started
+    profiles: [ "modules" ]
+    restart: unless-stopped
+    networks:
+      - rococo-network
+
+  rococo-painting:
+    image: rococo-painting:latest
+    container_name: rococo-painting
+    ports:
+      - "8099:8099"
+      - "8100:8100"
+    environment:
+      SPRING_PROFILES_ACTIVE: docker
+    depends_on:
+      rococo-postgres:
+        condition: service_healthy
+      rococo-artist:
+        condition: service_started
+      rococo-museum:
+        condition: service_started
+    profiles: [ "modules" ]
+    restart: unless-stopped
+    networks:
+      - rococo-network
+
+  rococo-gateway:
+    image: rococo-gateway:latest
+    container_name: rococo-gateway
+    ports:
+      - "8080:8080"
+    environment:
+      SPRING_PROFILES_ACTIVE: docker
+    depends_on:
+      rococo-auth:
+        condition: service_started
+      rococo-userdata:
+        condition: service_started
+      rococo-geo:
+        condition: service_started
+      rococo-artist:
+        condition: service_started
+      rococo-museum:
+        condition: service_started
+      rococo-painting:
+        condition: service_started
+    profiles: [ "modules" ]
+    restart: unless-stopped
+    networks:
+      - rococo-network
+
+  rococo-client:
+    image: rococo-client:latest
+    build:
+      context: ./rococo-client
+      dockerfile: ./Dockerfile
+    container_name: rococo-client
+    ports:
+      - "3000:80"
+    depends_on:
+      rococo-gateway:
+        condition: service_started
+    profiles: [ "modules" ]
+    restart: unless-stopped
+    networks:
+      - rococo-network
+
+  rococo-tests:
+    image: rococo-tests:latest
+    build:
+      context: .
+      dockerfile: rococo-tests/Dockerfile
+    container_name: rococo-tests
+    environment:
+      TZ: Europe/Moscow
+    #    command: [ ":rococo-tests:test", "--tests", "io.efremov.rococo.test.api.rest.CreateArtistTest.positiveCreateArtistTest", "-Dtest.env=docker", "-Duser.timezone=Europe/Moscow" ]
+    command: [ ":rococo-tests:testApi", "-Dtest.env=docker", "-Duser.timezone=Europe/Moscow" ]
+    depends_on:
+      selenoid:
+        condition: service_started
+    volumes:
+      - ./.allure-results:/home/gradle/rococo/rococo-tests/build/allure-results
+    profiles: [ "tests" ]
+    networks:
+      - rococo-network
+
+  selenoid:
+    image: aerokube/selenoid:1.11.3
+    container_name: selenoid
+    ports:
+      - 4444:4444
+    environment:
+      - TZ=Europe/Moscow
+      - DOCKER_API_VERSION=1.45
+    command: [ "-conf", "/etc/selenoid/browsers.json", "-limit", "3", "-video-output-dir", "/opt/selenoid/video", "-log-output-dir", "/opt/selenoid/logs", "-container-network", "rococo-network" ]
+    depends_on:
+      rococo-client:
+        condition: service_started
+    volumes:
+      - ./selenoid:/etc/selenoid
+      - /var/run/docker.sock:/var/run/docker.sock
+    profiles: [ "tests" ]
+    restart: unless-stopped
+    networks:
+      - rococo-network
+
+  selenoid-ui:
+    image: aerokube/selenoid-ui:1.10.11
+    container_name: selenoid-ui
+    ports:
+      - 9091:8080
+    depends_on:
+      - selenoid
+    command: [ "--selenoid-uri", "http://selenoid:4444" ]
+    profiles: [ "debug" ]
+    restart: unless-stopped
+    networks:
+      - rococo-network
+
+volumes:
+  postgres-data:
+
+networks:
+  rococo-network:
+    name: rococo-network
+    driver: bridge

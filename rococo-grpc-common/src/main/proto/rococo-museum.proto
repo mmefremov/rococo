@@ -1,0 +1,69 @@
+syntax = "proto3";
+
+package rococo;
+
+option java_package = "io.efremov.rococo.grpc";
+option java_multiple_files = true;
+
+service MuseumService {
+  rpc GetAllMuseums (MuseumPageRequest) returns (MuseumPageResponse);
+  rpc GetMuseumById (MuseumByIdRequest) returns (MuseumResponse);
+  rpc GetMuseumsByIds (MuseumsByIdRequest) returns (MuseumsResponse);
+  rpc CreateMuseum (CreateMuseumRequest) returns (MuseumResponse);
+  rpc UpdateMuseum (UpdateMuseumRequest) returns (MuseumResponse);
+}
+
+message MuseumResponse {
+  string id = 1;
+  string title = 2;
+  string description = 3;
+  string photo = 4;
+  string city = 5;
+  string country_id = 6;
+}
+
+message MuseumPageRequest {
+  int32 page = 1;
+  int32 size = 2;
+  optional string title = 3;
+}
+
+message MuseumPageResponse {
+  repeated MuseumResponse content = 1;
+  int32 total_elements = 2;
+  int32 total_pages = 3;
+  int32 page_number = 4;
+  int32 page_size = 5;
+  bool last = 6;
+  bool first = 7;
+  int32 number_of_elements = 8;
+}
+
+message MuseumByIdRequest {
+  string id = 1;
+}
+
+message MuseumsByIdRequest {
+  repeated string id = 1;
+}
+
+message MuseumsResponse {
+  repeated MuseumResponse museums = 1;
+}
+
+message CreateMuseumRequest {
+  string title = 1;
+  string description = 2;
+  string photo = 3;
+  string city = 4;
+  string country_id = 5;
+}
+
+message UpdateMuseumRequest {
+  string id = 1;
+  string title = 2;
+  string description = 3;
+  string photo = 4;
+  string city = 5;
+  string country_id = 6;
+}

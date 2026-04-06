@@ -8,8 +8,14 @@
 **/vite.config.ts.timestamp-*
 
 #back
+**/*.log
+.allure-results
+allure-report
 gradle
 .gradle
+.claude
+CLAUDE.md
+CLAUDE.original.md
 **/build
 !**/src/main/**/build/
 !**/src/test/**/build/

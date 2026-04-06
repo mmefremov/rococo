@@ -27,26 +27,26 @@ public class UserEntity implements Serializable {
 
   @Id
   @GeneratedValue(strategy = GenerationType.AUTO)
-  @Column(name = "id", nullable = false, columnDefinition = "UUID default gen_random_uuid()")
+  @Column(name = "id", nullable = false, columnDefinition = "UUID default uuid_generate_v4()")
   private UUID id;
 
-  @Column(nullable = false, unique = true)
+  @Column(name = "user_name", nullable = false, unique = true)
   private String username;
 
   @Column(nullable = false)
   private String password;
 
   @Column(nullable = false)
-  private Boolean enabled;
+  private boolean enabled;
 
   @Column(name = "account_non_expired", nullable = false)
-  private Boolean accountNonExpired;
+  private boolean accountNonExpired;
 
   @Column(name = "account_non_locked", nullable = false)
-  private Boolean accountNonLocked;
+  private boolean accountNonLocked;
 
   @Column(name = "credentials_non_expired", nullable = false)
-  private Boolean credentialsNonExpired;
+  private boolean credentialsNonExpired;
 
   @OneToMany(fetch = EAGER, cascade = CascadeType.ALL, orphanRemoval = true, mappedBy = "user")
   private List<AuthorityEntity> authorities = new ArrayList<>();

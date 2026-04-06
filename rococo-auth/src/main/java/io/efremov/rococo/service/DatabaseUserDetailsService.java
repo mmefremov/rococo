@@ -27,10 +27,10 @@ public class DatabaseUserDetailsService implements UserDetailsService {
         .map(ue -> new User(
             ue.getUsername(),
             ue.getPassword(),
-            ue.getEnabled(),
-            ue.getAccountNonExpired(),
-            ue.getCredentialsNonExpired(),
-            ue.getAccountNonLocked(),
+            ue.isEnabled(),
+            ue.isAccountNonExpired(),
+            ue.isCredentialsNonExpired(),
+            ue.isAccountNonLocked(),
             ue.getAuthorities().stream().map(
                 a -> new SimpleGrantedAuthority(a.getAuthority().name())
             ).toList()

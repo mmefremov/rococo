@@ -1,0 +1,107 @@
+name: CI
+
+on:
+  push:
+    branches: [ "**" ]
+  pull_request:
+    branches: [ "**" ]
+
+jobs:
+  build-and-test:
+    name: Build & Test
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v6
+
+      - name: Set up Java 21
+        uses: actions/setup-java@v5
+        with:
+          java-version: '21'
+          distribution: 'temurin'
+          cache: 'gradle'
+
+      # ── Step 1: Build all modules + unit tests ──────────────────────────
+      - name: Build & run unit tests
+        run: ./gradlew build -x :rococo-tests:compileTestJava -x :rococo-tests:testClasses
+
+      # ── Step 2: Publish unit test results ───────────────────────────────
+      - name: Publish unit test results
+        uses: dorny/test-reporter@v3
+        if: always()
+        with:
+          name: Unit Tests
+          path: |
+            rococo-auth/build/test-results/test/**/*.xml
+            rococo-geo/build/test-results/test/**/*.xml
+            rococo-artist/build/test-results/test/**/*.xml
+            rococo-museum/build/test-results/test/**/*.xml
+            rococo-painting/build/test-results/test/**/*.xml
+            rococo-userdata/build/test-results/test/**/*.xml
+            rococo-gateway/build/test-results/test/**/*.xml
+          reporter: java-junit
+          fail-on-error: false
+
+      # ── Step 3: Build Docker images ──────────────────────────────────────
+      - name: Build service Docker images
+        run: ./gradlew dockerBuildAll
+
+      - name: Build client Docker image
+        run: docker build -f rococo-client/Dockerfile -t rococo-client:latest rococo-client
+
+      - name: Build tests Docker image
+        run: |
+          ./gradlew :rococo-tests:build -x test
+          docker build -f rococo-tests/Dockerfile -t rococo-tests:latest .
+
+      # ── Step 4: Start infra + services and run integration tests ─────────
+      - name: Run integration tests
+        run: COMPOSE_PROFILES=env,modules,tests docker compose up --exit-code-from rococo-tests
+        continue-on-error: true
+
+      - name: Stop all containers
+        if: always()
+        run: COMPOSE_PROFILES=env,modules,tests docker compose down
+
+      # ── Step 5: Generate Allure report ───────────────────────────────────
+      - name: Generate Allure report
+        if: always()
+        run: |
+          npm install -g allure-commandline
+          allure generate --single-file .allure-results -o allure-report --clean
+
+      # ── Step 6: Upload report artifact ───────────────────────────────────
+      - name: Upload Allure report
+        if: always()
+        id: upload-report
+        uses: actions/upload-artifact@v7
+        with:
+          name: report
+          path: allure-report/
+          retention-days: 14
+
+      # ── Step 7: Comment on PR ─────────────────────────────────────────────
+      - name: Comment on PR
+        if: github.event_name == 'pull_request' && always()
+        uses: actions/github-script@v7
+        with:
+          script: |
+            const runUrl = `https://github.com/${context.repo.owner}/${context.repo.repo}/actions/runs/${context.runId}`;
+            const jobStatus = '${{ job.status }}'.toUpperCase();
+            const emoji = jobStatus === 'SUCCESS' ? '✅' : '❌';
+
+            await github.rest.issues.createComment({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              issue_number: context.issue.number,
+              body: [
+                `## ${emoji} CI Results`,
+                ``,
+                `**Status:** ${jobStatus}`,
+                ``,
+                `**Allure Report:** [Download report.zip](${runUrl}) → Artifacts → \`report\``,
+                ``,
+                `> Artifact available for 14 days.`,
+              ].join('\n'),
+            });

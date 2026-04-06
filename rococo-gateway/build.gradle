@@ -6,18 +6,33 @@ group = 'io.efremov'
 version = '1.0.0'
 
 dependencies {
+    implementation project(':rococo-grpc-common')
+
     implementation 'org.springframework.boot:spring-boot-starter-security'
     implementation 'org.springframework.boot:spring-boot-starter-oauth2-resource-server'
     implementation 'org.springframework.boot:spring-boot-starter-web'
-    implementation 'org.springframework.boot:spring-boot-starter-data-jpa'
     implementation 'org.springframework.boot:spring-boot-starter-validation'
+    implementation "io.grpc:grpc-netty-shaded:${grpcVersion}"
+    implementation "io.grpc:grpc-protobuf:${grpcVersion}"
+    implementation "io.grpc:grpc-stub:${grpcVersion}"
+    implementation "io.grpc:grpc-inprocess:${grpcVersion}"
+    implementation("net.devh:grpc-client-spring-boot-starter:${grpcSpringBootStarterVersion}") {
+        exclude group: 'io.grpc'
+    }
+
     annotationProcessor "org.projectlombok:lombok:${project.ext.lombokVersion}"
     compileOnly "org.projectlombok:lombok:${project.ext.lombokVersion}"
-    runtimeOnly "org.postgresql:postgresql:${project.ext.postgresDriverVersion}"
+
+    testImplementation 'org.springframework.boot:spring-boot-starter-test'
+    testImplementation 'org.springframework.security:spring-security-test'
 }
 
 tasks.register('printVersion') {
     doLast {
-        println project.version
+        println version
     }
+}
+
+tasks.named('test') {
+    useJUnitPlatform()
 }

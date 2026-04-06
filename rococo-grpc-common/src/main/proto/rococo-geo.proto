@@ -1,0 +1,40 @@
+syntax = "proto3";
+
+package rococo;
+
+option java_package = "io.efremov.rococo.grpc";
+option java_multiple_files = true;
+
+service GeoService {
+  rpc GetAllCountries (CountryPageRequest) returns (CountryPageResponse);
+  rpc GetCountriesByIds (CountriesByIdRequest) returns (CountriesResponse);
+}
+
+message CountryResponse {
+  string id = 1;
+  string name = 2;
+}
+
+message CountryPageRequest {
+  int32 page = 1;
+  int32 size = 2;
+}
+
+message CountryPageResponse {
+  repeated CountryResponse content = 1;
+  int32 total_elements = 2;
+  int32 total_pages = 3;
+  int32 page_number = 4;
+  int32 page_size = 5;
+  bool last = 6;
+  bool first = 7;
+  int32 number_of_elements = 8;
+}
+
+message CountriesByIdRequest {
+  repeated string id = 1;
+}
+
+message CountriesResponse {
+  repeated CountryResponse countries = 1;
+}
