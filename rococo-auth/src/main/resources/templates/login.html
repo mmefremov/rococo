@@ -1,0 +1,58 @@
+<!DOCTYPE HTML>
+<html lang="ru" xmlns="http://www.w3.org/1999/xhtml" xmlns:th="https://www.thymeleaf.org">
+<head>
+  <title>Rococo</title>
+  <link rel="icon" th:href="@{/images/favicon.ico}"/>
+  <link rel="stylesheet" th:href="@{/styles/styles.css}" type="text/css"/>
+</head>
+<body>
+<main>
+  <div class="wrapper">
+    <section class="content">
+      <form action="#" class="form" method="post" th:action="@{/login}">
+        <h1 class="form__header">Ro<span class="form__text_gold">coco</span></h1>
+        <div th:if="${param.error}">
+          <p class="form__error login__error">[[${session.SPRING_SECURITY_LAST_EXCEPTION.message}]]</p>
+        </div>
+        <div th:if="${param.logout}">
+          <p class="text-warning">You have been logged out.</p>
+        </div>
+        <label class="form__element">
+          <span class="form__label">Имя пользователя</span>
+          <input class="form__input" name="username" placeholder="Введите имя пользователя..." required type="text"/>
+        </label>
+        <label class="form__element">
+          <span class="form__label">Пароль</span>
+          <input class="form__input" name="password" placeholder="Введите пароль..." required type="password"/>
+          <button class="form__password-button" type="button"></button>
+        </label>
+        <button class="form__submit" type="submit">
+          Войти
+        </button>
+        <p class="form__paragraph">Нет аккаунта? <a class="form__link" th:href="@{/register}">Зарегистрироваться</a></p>
+      </form>
+      <img alt="Эрмитаж" class="content__image" src="../static/images/hermitage.jpg" th:src="@{/images/hermitage.jpg}"/>
+    </section>
+  </div>
+</main>
+<script>
+  const passwordButton = document.querySelector(".form__password-button");
+  const passwordInput = document.querySelector("[name=password]");
+
+  const togglePasswordInputType = (inputType) => {
+    return inputType === "password" ? "text" : "password";
+  }
+
+  const togglePasswordButtonClass = () => {
+    passwordButton.classList.toggle("form__password-button_active");
+  }
+
+  const handlePasswordButtonClick = () => {
+    passwordInput.setAttribute("type", togglePasswordInputType(passwordInput.getAttribute("type")));
+    togglePasswordButtonClass();
+  }
+
+  passwordButton.addEventListener("click", handlePasswordButtonClick);
+</script>
+</body>
+</html>
