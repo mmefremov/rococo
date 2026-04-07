@@ -4,7 +4,6 @@ set -e
 echo "=== Cleaning up rococo containers, images, volumes ==="
 docker ps -aq --filter "name=rococo" | xargs -r docker rm -f
 docker images --format '{{.Repository}}:{{.Tag}}' | grep '^rococo' | xargs -r docker rmi -f
-docker volume ls -q --filter "name=rococo" | xargs -r docker volume rm -f
 
 echo "=== Building and dockerizing services ==="
 for svc in auth gateway userdata geo artist museum painting; do

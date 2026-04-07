@@ -20,11 +20,7 @@
 ### Запуск Postgres и Kafka
 
 ```bash
-# удаляем контейнеры rococo
 docker ps -aq --filter "name=rococo" | xargs -r docker rm -f
-# удаляем volumes rococo
-docker volume ls -q --filter "name=rococo" | xargs -r docker volume rm -f
-# запускаем локальное окружение
 docker compose --profile env up -d
 ```
 

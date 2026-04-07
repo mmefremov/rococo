@@ -30,7 +30,7 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 docker compose -f docker-compose-local.yml up -d
 
 # Free ports used by running services
-bash ports.sh   # kills PIDs on 9000, 8080, 3000
+bash free-ports.sh   # kills PIDs on 9000, 8080, 3000
 ```
 
 Start services individually (each in its own terminal):

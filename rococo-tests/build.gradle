@@ -1,0 +1,142 @@
+plugins {
+    id 'io.qameta.allure' version '3.0.0'
+    id 'io.qameta.allure-adapter' version '3.0.0'
+}
+
+group = 'io.efremov'
+version = '1.0.0'
+
+ext {
+    junitVersion = '5.13.4'
+    allureVersion = '2.30.0'
+    okhttp3Version = '5.1.0'
+    retrofitVersion = '3.0.0'
+    log4j2Version = '2.24.3'
+    fakerVersion = '2.5.4'
+    selenideVersion = '7.10.0'
+    hibernateVersion = '7.3.1.Final'
+}
+
+allure {
+    version.set("${allureVersion}")
+    adapter {
+        aspectjVersion.set("1.9.22")
+        aspectjWeaver.set(true)
+    }
+}
+
+dependencies {
+    testImplementation project(':rococo-grpc-common')
+
+    testImplementation "org.hibernate:hibernate-core:${hibernateVersion}"
+    testImplementation "io.grpc:grpc-netty-shaded:${grpcVersion}"
+    testImplementation "io.grpc:grpc-protobuf:${grpcVersion}"
+    testImplementation "io.grpc:grpc-stub:${grpcVersion}"
+    testImplementation "com.google.protobuf:protobuf-java-util:${project.ext.protobufVersion}"
+
+    testImplementation "org.apache.logging.log4j:log4j-api:${log4j2Version}"
+    testImplementation "org.apache.logging.log4j:log4j-core:${log4j2Version}"
+    testImplementation "org.apache.logging.log4j:log4j-slf4j2-impl:${log4j2Version}"
+    testImplementation 'com.github.vertical-blank:sql-formatter:2.0.5'
+    testImplementation "org.junit.jupiter:junit-jupiter:${junitVersion}"
+    testImplementation "com.squareup.okhttp3:logging-interceptor:${okhttp3Version}"
+    testImplementation "com.squareup.okhttp3:okhttp-urlconnection:${okhttp3Version}"
+    testImplementation "com.squareup.okhttp3:okhttp:${okhttp3Version}"
+    testImplementation("com.squareup.retrofit2:retrofit:${retrofitVersion}") {
+        exclude group: "com.squareup.okhttp3"
+    }
+    testImplementation "com.squareup.retrofit2:converter-scalars:${retrofitVersion}"
+    testImplementation("com.squareup.retrofit2:converter-jackson:${retrofitVersion}") {
+        exclude group: "com.squareup.okhttp3"
+    }
+    testImplementation "com.fasterxml.jackson.datatype:jackson-datatype-jsr310:2.18.2"
+    testImplementation "io.qameta.allure:allure-attachments:${allureVersion}"
+    testImplementation("io.qameta.allure:allure-junit5:${allureVersion}") {
+        exclude group: "org.junit.jupiter"
+    }
+    testImplementation "io.qameta.allure:allure-okhttp3:${allureVersion}"
+    testImplementation "io.qameta.allure:allure-grpc:${allureVersion}"
+    testImplementation "net.datafaker:datafaker:${fakerVersion}"
+    testImplementation 'org.apache.commons:commons-lang3:3.17.0'
+    testImplementation 'org.assertj:assertj-core:3.27.6'
+    testImplementation 'org.instancio:instancio-core:5.5.1'
+    testImplementation("com.codeborne:selenide:${selenideVersion}") {
+        exclude group: 'org.testng'
+    }
+    testImplementation("io.qameta.allure:allure-selenide:${allureVersion}") {
+        exclude group: 'com.codeborne'
+    }
+    testImplementation 'p6spy:p6spy:3.9.1'
+    testImplementation "org.aspectj:aspectjrt:1.9.22"
+    testAnnotationProcessor "org.projectlombok:lombok:${project.ext.lombokVersion}"
+    testCompileOnly "org.projectlombok:lombok:${project.ext.lombokVersion}"
+    testRuntimeOnly 'org.junit.platform:junit-platform-launcher'
+    testRuntimeOnly 'org.postgresql:postgresql'
+}
+
+def commonTestConfig = {
+    useJUnitPlatform()
+    systemProperty 'test.env', System.getProperty('test.env', '')
+    testLogging {
+        events 'passed', 'failed', 'skipped'
+        exceptionFormat = 'full'
+        showStandardStreams = true
+    }
+}
+
+test {
+    configure commonTestConfig
+}
+
+tasks.register('testApi') {
+    description = 'Runs API integration tests sequentially'
+    group = 'verification'
+    dependsOn 'testMutationApi', 'testInfoApi'
+}
+
+tasks.register('testMutationApi', Test) {
+    description = 'Runs mutation API integration tests'
+    group = 'verification'
+    configure commonTestConfig
+    useJUnitPlatform {
+        includeTags 'mutation'
+    }
+    testClassesDirs = sourceSets.test.output.classesDirs
+    classpath = sourceSets.test.runtimeClasspath
+    reports.html.outputLocation =
+            layout.buildDirectory.dir('reports/tests/mutationApi')
+    reports.junitXml.outputLocation =
+            layout.buildDirectory.dir('test-results/mutationApi')
+}
+
+tasks.register('testInfoApi', Test) {
+    description = 'Runs info API integration tests'
+    group = 'verification'
+    configure commonTestConfig
+    useJUnitPlatform {
+        includeTags 'info'
+    }
+    testClassesDirs = sourceSets.test.output.classesDirs
+    classpath = sourceSets.test.runtimeClasspath
+    reports.html.outputLocation =
+            layout.buildDirectory.dir('reports/tests/infoApi')
+    reports.junitXml.outputLocation =
+            layout.buildDirectory.dir('test-results/infoApi')
+    mustRunAfter tasks.named('testMutationApi')
+}
+
+tasks.register('testUi', Test) {
+    description = 'Runs UI tests'
+    group = 'verification'
+    configure commonTestConfig
+    useJUnitPlatform {
+        includeTags 'ui'
+    }
+    testClassesDirs = sourceSets.test.output.classesDirs
+    classpath = sourceSets.test.runtimeClasspath
+    reports.html.outputLocation =
+            layout.buildDirectory.dir('reports/tests/ui')
+    reports.junitXml.outputLocation =
+            layout.buildDirectory.dir('test-results/ui')
+}
+

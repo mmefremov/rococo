@@ -1,0 +1,10 @@
+**
+!gradle/
+!gradle/**
+!rococo-tests/
+!rococo-tests/**
+!rococo-grpc-common/
+!rococo-grpc-common/**
+!build.gradle
+!settings.gradle
+!gradle.properties

@@ -2,7 +2,7 @@ package io.efremov.rococo.test.api.grpc;
 
 import static io.efremov.rococo.config.Constants.INFO_API_TAG;
 
-import io.efremov.rococo.api.ValidationGrpcSteps;
+import io.efremov.rococo.api.validation.GrpcValidation;
 import io.efremov.rococo.grpc.ArtistByIdRequest;
 import io.efremov.rococo.grpc.ArtistsResponse;
 import io.efremov.rococo.jupiter.annotation.NewArtist;
@@ -31,7 +31,7 @@ class GetArtistByIdTest extends BaseGrpcTest {
         .build();
     var response = ARTIST_BLOCKING_STUB.getArtistById(request);
 
-    ValidationGrpcSteps.checkEntity(request, response);
+    GrpcValidation.checkEntity(request, response);
   }
 
   @Test
