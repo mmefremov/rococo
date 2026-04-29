@@ -95,6 +95,22 @@ public class GrpcValidation {
     });
   }
 
+  @Step("Check the data of the received response matches the data from the database")
+  public static void checkEntity(@NonNull ArtistByIdRequest request, @NonNull ArtistsResponse response) {
+    assertThat(request.getIdList()).as("request ids").hasSize(1);
+    assertThat(response.getArtistsList()).as("response artists").hasSize(1);
+    String id = request.getId(0);
+    var entity = new ArtistRepository().findById(UUID.fromString(id));
+    assertThat(entity).as("entity").isNotNull();
+    ArtistResponse actual = response.getArtists(0);
+    assertSoftly(softly -> {
+      softly.assertThat(actual.getId()).as("id").isEqualTo(id);
+      softly.assertThat(actual.getName()).as("name").isEqualTo(entity.getName());
+      softly.assertThat(actual.getBiography()).as("biography").isEqualTo(entity.getBiography());
+      softly.assertThat(actual.getPhoto()).as("photo").isEqualTo(new String(entity.getPhoto()));
+    });
+  }
+
   @Step("Check the data of sent input and the received response")
   public static void checkResponse(@NonNull CreatePaintingRequest request, @NonNull PaintingResponse response) {
     assertSoftly(softly -> {
