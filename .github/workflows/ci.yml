@@ -27,21 +27,21 @@ jobs:
         run: ./gradlew build -x :rococo-tests:compileTestJava -x :rococo-tests:testClasses
 
       # ── Step 2: Publish unit test results ───────────────────────────────
-      - name: Publish unit test results
-        uses: dorny/test-reporter@v3
-        if: always()
-        with:
-          name: Unit Tests
-          path: |
-            rococo-auth/build/test-results/test/**/*.xml
-            rococo-geo/build/test-results/test/**/*.xml
-            rococo-artist/build/test-results/test/**/*.xml
-            rococo-museum/build/test-results/test/**/*.xml
-            rococo-painting/build/test-results/test/**/*.xml
-            rococo-userdata/build/test-results/test/**/*.xml
-            rococo-gateway/build/test-results/test/**/*.xml
-          reporter: java-junit
-          fail-on-error: false
+      #      - name: Publish unit test results
+      #        uses: dorny/test-reporter@v3
+      #        if: always()
+      #        with:
+      #          name: Unit Tests
+      #          path: |
+      #            rococo-auth/build/test-results/test/**/*.xml
+      #            rococo-geo/build/test-results/test/**/*.xml
+      #            rococo-artist/build/test-results/test/**/*.xml
+      #            rococo-museum/build/test-results/test/**/*.xml
+      #            rococo-painting/build/test-results/test/**/*.xml
+      #            rococo-userdata/build/test-results/test/**/*.xml
+      #            rococo-gateway/build/test-results/test/**/*.xml
+      #          reporter: java-junit
+      #          fail-on-error: false
 
       # ── Step 3: Build Docker images ──────────────────────────────────────
       - name: Build service Docker images
