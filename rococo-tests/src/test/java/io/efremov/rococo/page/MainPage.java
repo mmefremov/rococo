@@ -30,6 +30,12 @@ public class MainPage extends BasePage {
     return this;
   }
 
+  @Step("Verify user is logged in")
+  public MainPage verifyUserIsLoggedIn() {
+    header.isLoggedIn();
+    return this;
+  }
+
   @Step("Navigate to paintings page via card")
   public PaintingsPage goToPaintingsCard() {
     paintingsCard.shouldBe(visible).click();

@@ -24,7 +24,8 @@ class MainPageTest {
   @DisplayName("main page")
   void mainPageTest() {
     MainPage.open()
-        .verifyPageLoaded();
+        .verifyPageLoaded()
+        .verifyUserIsLoggedIn();
   }
 }
 

@@ -207,14 +207,13 @@ services:
     container_name: rococo-tests
     environment:
       TZ: Europe/Moscow
-    #    command: [ ":rococo-tests:test", "--tests", "io.efremov.rococo.test.ui.MainPageTest.mainPageTest", "-Dtest.env=docker", "-Duser.timezone=Europe/Moscow" ]
-    #    command: [ ":rococo-tests:test", "--tests", "io.efremov.rococo.test.api.rest.CreateArtistTest.positiveCreateArtistTest", "-Dtest.env=docker", "-Duser.timezone=Europe/Moscow" ]
-    command: [ ":rococo-tests:testApi", "-Dtest.env=docker", "-Duser.timezone=Europe/Moscow" ]
+    command: [ ":rococo-tests:testApi", ":rococo-tests:testUi", "-Dtest.env=docker", "-Duser.timezone=Europe/Moscow" ]
     depends_on:
       selenoid:
         condition: service_started
     volumes:
       - ./.allure-results:/home/gradle/rococo/rococo-tests/build/allure-results
+      - ./rococo-tests/build/test-results:/home/gradle/rococo/rococo-tests/build/test-results
     profiles: [ "tests" ]
     networks:
       - rococo-network

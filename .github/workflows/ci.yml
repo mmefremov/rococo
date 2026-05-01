@@ -8,7 +8,7 @@ on:
 
 jobs:
   build-and-test:
-    name: Build & Test
+    name: Rococo CI
     runs-on: ubuntu-latest
 
     steps:
@@ -22,28 +22,39 @@ jobs:
           distribution: 'temurin'
           cache: 'gradle'
 
-      # ── Step 1: Build all modules + unit tests ──────────────────────────
+      - name: Cache Gradle packages
+        uses: actions/cache@v4
+        with:
+          path: |
+            ~/.gradle/caches
+            ~/.gradle/wrapper
+          key: ${{ runner.os }}-gradle-${{ hashFiles('**/*.gradle', 'gradle.properties', 'gradle/wrapper/gradle-wrapper.properties') }}
+          restore-keys: ${{ runner.os }}-gradle-
+
+      - name: Cache Selenoid Chrome image
+        id: cache-chrome
+        uses: actions/cache@v4
+        with:
+          path: /tmp/selenoid-chrome.tar
+          key: docker-twilio-selenoid-chrome-stable-147
+
+      - name: Pull Selenoid Chrome image (background)
+        run: |
+          (
+            if [ "${{ steps.cache-chrome.outputs.cache-hit }}" = "true" ]; then
+              docker load -i /tmp/selenoid-chrome.tar
+            else
+              docker pull twilio/selenoid:chrome_stable_147
+              docker save twilio/selenoid:chrome_stable_147 -o /tmp/selenoid-chrome.tar
+            fi
+            touch /tmp/chrome-ready
+          ) &
+
+      # Step 1: Build all modules + unit tests
       - name: Build & run unit tests
         run: ./gradlew build -x :rococo-tests:compileTestJava -x :rococo-tests:testClasses
 
-      # ── Step 2: Publish unit test results ───────────────────────────────
-      #      - name: Publish unit test results
-      #        uses: dorny/test-reporter@v3
-      #        if: always()
-      #        with:
-      #          name: Unit Tests
-      #          path: |
-      #            rococo-auth/build/test-results/test/**/*.xml
-      #            rococo-geo/build/test-results/test/**/*.xml
-      #            rococo-artist/build/test-results/test/**/*.xml
-      #            rococo-museum/build/test-results/test/**/*.xml
-      #            rococo-painting/build/test-results/test/**/*.xml
-      #            rococo-userdata/build/test-results/test/**/*.xml
-      #            rococo-gateway/build/test-results/test/**/*.xml
-      #          reporter: java-junit
-      #          fail-on-error: false
-
-      # ── Step 3: Build Docker images ──────────────────────────────────────
+      # Step 2: Build Docker images
       - name: Build service Docker images
         run: ./gradlew dockerBuildAll
 
@@ -55,7 +66,10 @@ jobs:
           ./gradlew :rococo-tests:build -x test
           docker build -f rococo-tests/Dockerfile -t rococo-tests:latest .
 
-      # ── Step 4: Start infra + services and run integration tests ─────────
+      # Step 3: Start infra + services and run integration tests
+      - name: Wait for Selenoid Chrome image
+        run: while [ ! -f /tmp/chrome-ready ]; do sleep 1; done
+
       - name: Run integration tests
         run: COMPOSE_PROFILES=env,modules,tests docker compose up --exit-code-from rococo-tests
         continue-on-error: true
@@ -64,14 +78,14 @@ jobs:
         if: always()
         run: COMPOSE_PROFILES=env,modules,tests docker compose down
 
-      # ── Step 5: Generate Allure report ───────────────────────────────────
+      # Step 4: Generate Allure report
       - name: Generate Allure report
         if: always()
         run: |
           npm install -g allure-commandline
           allure generate --single-file .allure-results -o allure-report --clean
 
-      # ── Step 6: Upload report artifact ───────────────────────────────────
+      # Step 5: Upload report artifact
       - name: Upload Allure report
         if: always()
         id: upload-report
@@ -81,27 +95,73 @@ jobs:
           path: allure-report/
           retention-days: 14
 
-      # ── Step 7: Comment on PR ─────────────────────────────────────────────
-      - name: Comment on PR
-        if: github.event_name == 'pull_request' && always()
+      # Step 6: Publish combined test results (Job Summary + PR comment)
+      - name: Publish test results
+        if: always()
         uses: actions/github-script@v7
+        env:
+          ARTIFACT_URL: ${{ steps.upload-report.outputs.artifact-url }}
         with:
           script: |
-            const runUrl = `https://github.com/${context.repo.owner}/${context.repo.repo}/actions/runs/${context.runId}`;
-            const jobStatus = '${{ job.status }}'.toUpperCase();
-            const emoji = jobStatus === 'SUCCESS' ? '✅' : '❌';
+            const fs = require('fs');
 
-            await github.rest.issues.createComment({
-              owner: context.repo.owner,
-              repo: context.repo.repo,
-              issue_number: context.issue.number,
-              body: [
-                `## ${emoji} CI Results`,
-                ``,
-                `**Status:** ${jobStatus}`,
-                ``,
-                `**Allure Report:** [Download report.zip](${runUrl}) → Artifacts → \`report\``,
-                ``,
-                `> Artifact available for 14 days.`,
-              ].join('\n'),
-            });
+            function parseXmlFiles(files) {
+              let tests = 0, failures = 0, errors = 0, skipped = 0;
+              for (const file of files) {
+                try {
+                  const content = fs.readFileSync(file, 'utf8');
+                  for (const match of content.matchAll(/<testsuite\b[^>]*>/g)) {
+                    const attr = (name) => parseInt(match[0].match(new RegExp(`${name}="(\\d+)"`))?.[1] ?? '0');
+                    tests    += attr('tests');
+                    failures += attr('failures');
+                    errors   += attr('errors');
+                    skipped  += attr('skipped');
+                  }
+                } catch (_) {}
+              }
+              return { tests, passed: tests - failures - errors - skipped, failures, errors, skipped };
+            }
+
+            function badge(label, r) {
+              const enc = (s) => encodeURIComponent(s).replace(/-/g, '--');
+              if (r.tests === 0) return `![${label}](https://img.shields.io/badge/${enc(label)}-no_results-lightgrey)`;
+              const msg = `${r.passed}/${r.tests} passed`;
+              const color = (r.failures + r.errors) > 0 ? 'red' : 'brightgreen';
+              return `![${label}](https://img.shields.io/badge/${enc(label)}-${enc(msg)}-${color})`;
+            }
+
+            const globber = await glob.create('**/build/test-results/test/**/TEST-*.xml');
+            const allFiles = await globber.glob();
+
+            const unitFiles = allFiles.filter(f => !f.includes('rococo-tests/'));
+            const e2eFiles  = allFiles.filter(f => f.includes('rococo-tests/'));
+            const apiFiles  = e2eFiles.filter(f => /test\.api[./]/.test(f));
+            const uiFiles   = e2eFiles.filter(f => /test\.ui[./]/.test(f));
+
+            const unit = parseXmlFiles(unitFiles);
+            const api  = parseXmlFiles(apiFiles);
+            const ui   = parseXmlFiles(uiFiles);
+
+            const badges = [
+              badge('Unit Tests', unit),
+              badge('API Tests', api),
+              badge('UI Tests', ui),
+            ].join('\n');
+
+            const artifactUrl = process.env.ARTIFACT_URL;
+            const reportBadge = artifactUrl
+              ? `\n[![Allure Report](https://img.shields.io/badge/Allure-report.zip-blueviolet)](${artifactUrl})`
+              : '';
+
+            // Job Summary (visible on all runs)
+            await core.summary.addRaw(badges + reportBadge).write();
+
+            // PR comment
+            if (context.eventName === 'pull_request') {
+              await github.rest.issues.createComment({
+                owner: context.repo.owner,
+                repo:  context.repo.repo,
+                issue_number: context.issue.number,
+                body: badges + reportBadge,
+              });
+            }

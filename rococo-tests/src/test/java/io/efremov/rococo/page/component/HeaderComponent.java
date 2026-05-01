@@ -48,9 +48,9 @@ public class HeaderComponent {
     loginButton.shouldBe(visible).click();
   }
 
-  @Step("Check if user is logged in")
-  public boolean isLoggedIn() {
-    return loginButton.is(not(visible)) || userAvatar.is(visible);
+  public void isLoggedIn() {
+    loginButton.shouldBe(not(visible));
+    userAvatar.shouldBe(visible);
   }
 
   @Step("Open profile modal")
