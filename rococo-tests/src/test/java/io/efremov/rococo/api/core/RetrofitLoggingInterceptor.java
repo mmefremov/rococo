@@ -1,7 +1,5 @@
 package io.efremov.rococo.api.core;
 
-import com.fasterxml.jackson.databind.JsonNode;
-import com.fasterxml.jackson.databind.node.ObjectNode;
 import io.efremov.rococo.util.JsonUtils;
 import java.io.IOException;
 import java.net.HttpCookie;
@@ -30,8 +28,6 @@ public class RetrofitLoggingInterceptor implements Interceptor {
   private static final String SEPARATOR = "\n";
   private static final String TAB = "\t";
   private static final String NONE = "<none>";
-  private static final int MAX_FIELD_LENGTH = 1_000;
-  private static final int TRUNCATED_PREFIX_LENGTH = 15;
   private static final Set<String> IGNORED_HEADERS = Set.of(
       "host", "connection", "accept-encoding", "user-agent", "cookie"
   );
@@ -172,59 +168,14 @@ public class RetrofitLoggingInterceptor implements Interceptor {
       return NONE;
     }
     if (contentType != null && contentType.subtype().contains("json")) {
-      JsonNode node = JsonUtils.readTree(bodyContent);
-      JsonNode truncated = truncateLongFields(node);
-      return JsonUtils.writeValueAsString(truncated);
+      return JsonUtils.writeValueAsStringWithLongFieldsTruncating(bodyContent);
     }
     return truncatePlain(bodyContent);
   }
 
-  public static JsonNode truncateLongFields(JsonNode node) {
-    if (node.isObject()) {
-      truncateObjectFields((ObjectNode) node);
-    } else if (node.isArray()) {
-      truncateArrayElements(node);
-    }
-    return node;
-  }
-
-  private static void truncateObjectFields(ObjectNode objectNode) {
-    objectNode.properties().forEach(entry ->
-        truncateNode(entry.getKey(), entry.getValue(), objectNode));
-  }
-
-  private static void truncateArrayElements(JsonNode arrayNode) {
-    for (int i = 0; i < arrayNode.size(); i++) {
-      JsonNode element = arrayNode.get(i);
-      if (element.isObject()) {
-        truncateObjectFields((ObjectNode) element);
-      } else if (element.isArray()) {
-        truncateArrayElements(element);
-      }
-    }
-  }
-
-  private static void truncateNode(String fieldName, JsonNode value, ObjectNode objectNode) {
-    if (value.isTextual()) {
-      truncateTextFieldIfNeeded(fieldName, value.asText(), objectNode);
-    } else if (value.isObject()) {
-      truncateObjectFields((ObjectNode) value);
-    } else if (value.isArray()) {
-      truncateArrayElements(value);
-    }
-  }
-
-  private static void truncateTextFieldIfNeeded(String fieldName, String text, ObjectNode objectNode) {
-    if (text.length() > MAX_FIELD_LENGTH) {
-      String truncated = text.substring(0, TRUNCATED_PREFIX_LENGTH)
-          + "... [truncated, original size: " + text.length() + " chars]";
-      objectNode.put(fieldName, truncated);
-    }
-  }
-
   private String truncatePlain(String content) {
-    if (content.length() > MAX_FIELD_LENGTH) {
-      return content.substring(0, TRUNCATED_PREFIX_LENGTH)
+    if (content.length() > JsonUtils.MAX_FIELD_LENGTH) {
+      return content.substring(0, JsonUtils.TRUNCATED_PREFIX_LENGTH)
           + "... [truncated, original size: " + content.length() + " chars]";
     }
     return content;

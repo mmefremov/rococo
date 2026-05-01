@@ -3,6 +3,7 @@ package io.efremov.rococo.api.core;
 import com.google.protobuf.InvalidProtocolBufferException;
 import com.google.protobuf.MessageOrBuilder;
 import com.google.protobuf.util.JsonFormat;
+import io.efremov.rococo.util.JsonUtils;
 import io.grpc.CallOptions;
 import io.grpc.Channel;
 import io.grpc.ClientCall;
@@ -49,8 +50,9 @@ public class GrpcConsoleInterceptor implements ClientInterceptor {
           public void onMessage(Object message) {
             try {
               String printed = printer.print((MessageOrBuilder) message);
-              log.info("RESPONSE: {}", printed);
-              attachToLastAllureStep("response", printed);
+              String prettyBody = JsonUtils.writeValueAsStringWithLongFieldsTruncating(printed);
+              log.info("RESPONSE: {}", prettyBody);
+              attachToLastAllureStep("response", prettyBody);
             } catch (InvalidProtocolBufferException e) {
               throw new RuntimeException(e);
             }
@@ -64,8 +66,9 @@ public class GrpcConsoleInterceptor implements ClientInterceptor {
       public void sendMessage(Object message) {
         try {
           String printed = printer.print((MessageOrBuilder) message);
-          log.info("REQUEST: {}", printed);
-          attachToLastAllureStep("request", printed);
+          String prettyBody = JsonUtils.writeValueAsStringWithLongFieldsTruncating(printed);
+          log.info("REQUEST: {}", prettyBody);
+          attachToLastAllureStep("request", prettyBody);
         } catch (InvalidProtocolBufferException e) {
           throw new RuntimeException(e);
         }
