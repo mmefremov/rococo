@@ -8,7 +8,6 @@ import static io.efremov.rococo.config.Constants.MIN_TITLE_LENGTH;
 import static io.efremov.rococo.config.Constants.MUTATION_API_TAG;
 
 import io.efremov.rococo.api.validation.GrpcValidation;
-import io.efremov.rococo.jupiter.annotation.AnyArtist;
 import io.efremov.rococo.jupiter.annotation.NewArtist;
 import io.efremov.rococo.model.ArtistInfoResponse;
 import io.efremov.rococo.provider.ArtistProvider;
@@ -85,7 +84,7 @@ class UpdateArtistTest extends BaseGrpcTest {
   }
 
   @Test
-  @AnyArtist
+  @NewArtist
   @DisplayName("Attempt to update artist with duplicate name")
   void negativeUpdateArtistWithDuplicateNameTest(ArtistInfoResponse existedArtist) {
     var request = ArtistProvider.getUpdateArtistRequest(prototype).toBuilder()

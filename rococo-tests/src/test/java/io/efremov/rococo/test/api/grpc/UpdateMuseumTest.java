@@ -9,7 +9,6 @@ import static io.efremov.rococo.config.Constants.MUTATION_API_TAG;
 
 import io.efremov.rococo.api.validation.GrpcValidation;
 import io.efremov.rococo.data.repository.CountryRepository;
-import io.efremov.rococo.jupiter.annotation.AnyMuseum;
 import io.efremov.rococo.jupiter.annotation.NewMuseum;
 import io.efremov.rococo.model.MuseumInfoResponse;
 import io.efremov.rococo.provider.MuseumProvider;
@@ -114,7 +113,7 @@ class UpdateMuseumTest extends BaseGrpcTest {
   }
 
   @Test
-  @AnyMuseum
+  @NewMuseum
   @DisplayName("Attempt to update museum with duplicate title")
   void negativeUpdateMuseumWithDuplicateTitleTest(MuseumInfoResponse existedMuseum) {
     var request = MuseumProvider.getUpdateMuseumRequest(prototype).toBuilder()

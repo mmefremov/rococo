@@ -5,7 +5,7 @@ import static io.efremov.rococo.config.Constants.INFO_API_TAG;
 import io.efremov.rococo.api.validation.GrpcValidation;
 import io.efremov.rococo.grpc.ArtistByIdRequest;
 import io.efremov.rococo.grpc.ArtistsResponse;
-import io.efremov.rococo.jupiter.annotation.NewArtist;
+import io.efremov.rococo.jupiter.annotation.AnyArtist;
 import io.efremov.rococo.model.ArtistInfoResponse;
 import io.qameta.allure.Epic;
 import io.qameta.allure.Feature;
@@ -23,7 +23,7 @@ import org.junit.jupiter.api.Test;
 class GetArtistByIdTest extends BaseGrpcTest {
 
   @Test
-  @NewArtist
+  @AnyArtist
   @DisplayName("Get artist by id")
   void positiveGetArtistByIdTest(ArtistInfoResponse existedArtist) {
     var request = ArtistByIdRequest.newBuilder()

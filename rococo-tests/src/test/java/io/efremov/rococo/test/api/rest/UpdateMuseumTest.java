@@ -9,7 +9,6 @@ import static io.efremov.rococo.config.Constants.MUTATION_API_TAG;
 
 import io.efremov.rococo.api.validation.RestValidation;
 import io.efremov.rococo.data.repository.CountryRepository;
-import io.efremov.rococo.jupiter.annotation.AnyMuseum;
 import io.efremov.rococo.jupiter.annotation.Authentication;
 import io.efremov.rococo.jupiter.annotation.NewMuseum;
 import io.efremov.rococo.model.CountryInfoRequest;
@@ -150,7 +149,7 @@ class UpdateMuseumTest {
 
   @Test
   @Authentication
-  @AnyMuseum
+  @NewMuseum
   @DisplayName("Attempt to update museum with duplicate title")
   void negativeUpdateMuseumWithDuplicateTitleTest(MuseumInfoResponse existedMuseum) {
     var request = Instancio.of(model)

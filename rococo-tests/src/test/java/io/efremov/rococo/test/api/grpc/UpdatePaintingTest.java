@@ -9,7 +9,6 @@ import static io.efremov.rococo.config.Constants.MUTATION_API_TAG;
 
 import io.efremov.rococo.api.validation.GrpcValidation;
 import io.efremov.rococo.jupiter.annotation.AnyArtist;
-import io.efremov.rococo.jupiter.annotation.AnyPainting;
 import io.efremov.rococo.jupiter.annotation.NewMuseum;
 import io.efremov.rococo.jupiter.annotation.NewPainting;
 import io.efremov.rococo.model.ArtistInfoResponse;
@@ -118,7 +117,7 @@ class UpdatePaintingTest extends BaseGrpcTest {
   }
 
   @Test
-  @AnyPainting
+  @NewPainting
   @DisplayName("Attempt to update painting with duplicate title")
   void negativeUpdatePaintingWithDuplicateTitleTest(PaintingInfoResponse existedPainting) {
     var request = PaintingProvider.getUpdatePaintingRequest(prototype).toBuilder()

@@ -6,7 +6,6 @@ import static io.efremov.rococo.config.Constants.MIN_DESCRIPTION_LENGTH;
 import static io.efremov.rococo.config.Constants.MUTATION_API_TAG;
 
 import io.efremov.rococo.api.validation.RestValidation;
-import io.efremov.rococo.jupiter.annotation.AnyPainting;
 import io.efremov.rococo.jupiter.annotation.Authentication;
 import io.efremov.rococo.jupiter.annotation.NewPainting;
 import io.efremov.rococo.model.ArtistInfoRequest;
@@ -154,7 +153,7 @@ class UpdatePaintingTest {
 
   @Test
   @Authentication
-  @AnyPainting
+  @NewPainting
   @DisplayName("Attempt to update painting with duplicate title")
   void negativeUpdatePaintingWithDuplicateTitleTest(PaintingInfoResponse existedPainting) {
     var request = Instancio.of(model)

@@ -71,11 +71,8 @@ jobs:
       - name: Wait for Selenoid Chrome image
         run: while [ ! -f /tmp/chrome-ready ]; do sleep 1; done
 
-      - name: Start services
-        run: COMPOSE_PROFILES=env,modules docker compose up -d
-
       - name: Run integration tests
-        run: COMPOSE_PROFILES=env,modules,tests docker compose run rococo-tests
+        run: COMPOSE_PROFILES=env,modules,tests docker compose up --exit-code-from rococo-tests
         continue-on-error: true
 
       - name: Stop all containers

@@ -207,8 +207,6 @@ services:
     container_name: rococo-tests
     environment:
       TZ: Europe/Moscow
-    command: [ ":rococo-tests:test", "--tests", "io.efremov.rococo.test.api.rest.CreateArtistTest.positiveCreateArtistTest", "--tests", "io.efremov.rococo.test.ui.MainPageTest.mainPageTest", "-Dtest.env=docker", "-Duser.timezone=Europe/Moscow" ]
-    #    command: [ ":rococo-tests:testApi", "-Dtest.env=docker", "-Duser.timezone=Europe/Moscow" ]
     depends_on:
       selenoid:
         condition: service_started

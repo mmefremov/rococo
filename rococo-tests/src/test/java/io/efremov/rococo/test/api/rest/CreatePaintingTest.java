@@ -8,8 +8,8 @@ import static io.efremov.rococo.config.Constants.MIN_TITLE_LENGTH;
 import static io.efremov.rococo.config.Constants.MUTATION_API_TAG;
 
 import io.efremov.rococo.api.validation.RestValidation;
-import io.efremov.rococo.jupiter.annotation.AnyPainting;
 import io.efremov.rococo.jupiter.annotation.Authentication;
+import io.efremov.rococo.jupiter.annotation.NewPainting;
 import io.efremov.rococo.model.ArtistInfoRequest;
 import io.efremov.rococo.model.CreatePaintingInfoRequest;
 import io.efremov.rococo.model.MuseumInfoRequest;
@@ -66,7 +66,7 @@ class CreatePaintingTest {
 
   @Test
   @Authentication
-  @AnyPainting
+  @NewPainting
   @DisplayName("Attempt to create painting with duplicate title")
   void negativeCreatePaintingWithDuplicateTitleTest(PaintingInfoResponse existedPainting) {
     var request = Instancio.of(model)

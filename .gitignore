@@ -9,7 +9,7 @@
 
 #back
 **/*.log
-.allure-results
+allure-results
 allure-report
 .gradle
 .claude

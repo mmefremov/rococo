@@ -8,7 +8,6 @@ import static io.efremov.rococo.config.Constants.MIN_TITLE_LENGTH;
 import static io.efremov.rococo.config.Constants.MUTATION_API_TAG;
 
 import io.efremov.rococo.api.validation.RestValidation;
-import io.efremov.rococo.jupiter.annotation.AnyArtist;
 import io.efremov.rococo.jupiter.annotation.Authentication;
 import io.efremov.rococo.jupiter.annotation.NewArtist;
 import io.efremov.rococo.model.ArtistInfoResponse;
@@ -114,7 +113,7 @@ class UpdateArtistTest {
 
   @Test
   @Authentication
-  @AnyArtist
+  @NewArtist
   @DisplayName("Attempt to update artist with duplicate name")
   void negativeUpdateArtistWithDuplicateNameTest(ArtistInfoResponse existedArtist) {
     var request = Instancio.of(model)
