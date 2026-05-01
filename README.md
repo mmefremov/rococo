@@ -10,7 +10,7 @@
     - [x] add gRPC tests
     - [ ] add UI tests
 - [x] containerize
-- [ ] CI pipeline
+- [x] CI pipeline
 
 ## Локальный запуск
 
@@ -60,23 +60,6 @@ COMPOSE_PROFILES=env,modules docker compose up -d
 
 ```bash
 COMPOSE_PROFILES=env,modules,tests docker compose up -d
-```
-
-## Гибридный запуск
-
-Сервисы запускаются в docker-окружении, тесты локально.
-
-- тесты должны быть запущены с параметром `-Dtest.env=hybrid`
-- необходимы алиасы для резолвинга имён в файле `/etc/hosts`
-
-```
-127.0.0.1 	rococo-auth
-127.0.0.1 	rococo-gateway
-127.0.0.1 	rococo-artist
-127.0.0.1 	rococo-geo
-127.0.0.1 	rococo-museum
-127.0.0.1 	rococo-painting
-127.0.0.1 	rococo-userdata
 ```
 
 ## Структура сервисов:
