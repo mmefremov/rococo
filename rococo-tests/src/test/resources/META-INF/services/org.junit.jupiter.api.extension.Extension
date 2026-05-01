@@ -1,2 +1,3 @@
 io.efremov.rococo.jupiter.extension.CookieExtension
+io.efremov.rococo.jupiter.extension.DatabasesExtension
 io.efremov.rococo.jupiter.extension.TestMethodContextExtension

@@ -213,7 +213,7 @@ services:
       selenoid:
         condition: service_started
     volumes:
-      - ./.allure-results:/home/gradle/rococo/rococo-tests/build/allure-results
+      - ./allure-results:/home/gradle/rococo/rococo-tests/build/allure-results
       - ./rococo-tests/build/test-results:/home/gradle/rococo/rococo-tests/build/test-results
     profiles: [ "tests" ]
     networks:

@@ -9,4 +9,4 @@ COPY ./build.gradle ./
 COPY ./settings.gradle ./
 COPY ./gradle.properties ./
 
-ENTRYPOINT ["gradle"]
+CMD ["gradle", ":rococo-tests:testInfoApi", ":rococo-tests:testUi", "-Dtest.env=docker", "-Duser.timezone=Europe/Moscow"]

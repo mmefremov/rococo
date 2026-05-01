@@ -1,6 +1,7 @@
 name: CI
 
 on:
+  workflow_dispatch:
   push:
     branches: [ "**" ]
   pull_request:
@@ -70,8 +71,11 @@ jobs:
       - name: Wait for Selenoid Chrome image
         run: while [ ! -f /tmp/chrome-ready ]; do sleep 1; done
 
+      - name: Start services
+        run: COMPOSE_PROFILES=env,modules docker compose up -d
+
       - name: Run integration tests
-        run: COMPOSE_PROFILES=env,modules,tests docker compose up --exit-code-from rococo-tests
+        run: COMPOSE_PROFILES=env,modules,tests docker compose run rococo-tests
         continue-on-error: true
 
       - name: Stop all containers
@@ -83,7 +87,7 @@ jobs:
         if: always()
         run: |
           npm install -g allure-commandline
-          allure generate --single-file .allure-results -o allure-report --clean
+          allure generate --single-file allure-results -o allure-report --clean
 
       # Step 5: Upload report artifact
       - name: Upload Allure report
@@ -130,13 +134,13 @@ jobs:
               return `![${label}](https://img.shields.io/badge/${enc(label)}-${enc(msg)}-${color})`;
             }
 
-            const globber = await glob.create('**/build/test-results/test/**/TEST-*.xml');
+            const globber = await glob.create('**/build/test-results/**/TEST-*.xml');
             const allFiles = await globber.glob();
 
             const unitFiles = allFiles.filter(f => !f.includes('rococo-tests/'));
             const e2eFiles  = allFiles.filter(f => f.includes('rococo-tests/'));
-            const apiFiles  = e2eFiles.filter(f => /test\.api[./]/.test(f));
-            const uiFiles   = e2eFiles.filter(f => /test\.ui[./]/.test(f));
+            const apiFiles  = e2eFiles.filter(f => /\/\w*[Aa]pi\//.test(f));
+            const uiFiles   = e2eFiles.filter(f => /\/\w*[Uu]i\//.test(f));
 
             const unit = parseXmlFiles(unitFiles);
             const api  = parseXmlFiles(apiFiles);
@@ -153,7 +157,7 @@ jobs:
               ? `\n[![Allure Report](https://img.shields.io/badge/Allure-report.zip-blueviolet)](${artifactUrl})`
               : '';
 
-            // Job Summary (visible on all runs)
+            // Job Summary
             await core.summary.addRaw(badges + reportBadge).write();
 
             // PR comment
