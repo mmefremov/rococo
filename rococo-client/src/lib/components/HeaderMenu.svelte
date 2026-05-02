@@ -71,11 +71,11 @@ const clickProfileButton = () => {
     <div class="placeholder-circle w-10" />
 {:else}
     {#if $sessionStore.user}
-        <button type="button" class="btn-icon variant-filled-surface relative" on:click={clickProfileButton}>
+        <button data-testid="profile-button" type="button" class="btn-icon variant-filled-surface relative" on:click={clickProfileButton}>
             <Avatar src={$sessionStore.user.avatar} width="w-16" rounded="rounded-full" />
         </button>
     {:else}
-        <button type="button" class="btn variant-filled-primary" on:click={onLoginClick}>
+        <button data-testid="login-button" type="button" class="btn variant-filled-primary" on:click={onLoginClick}>
             Войти
         </button>
     {/if}

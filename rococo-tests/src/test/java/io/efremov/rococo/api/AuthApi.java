@@ -12,7 +12,7 @@ import retrofit2.http.Query;
 public interface AuthApi {
 
   @GET("oauth2/authorize")
-  Call<Void> authorize(
+  Call<ResponseBody> authorize(
       @Query("response_type") String responseType,
       @Query("client_id") String clientId,
       @Query("scope") String scope,

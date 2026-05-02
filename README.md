@@ -1,17 +1,5 @@
 # Rococo
 
-## todo
-
-- [x] create services projects
-    - [x] add `.proto` files for gRPC
-    - [x] add unit tests
-- [x] create tests project
-    - [x] add REST tests
-    - [x] add gRPC tests
-    - [ ] add UI tests
-- [x] containerize
-- [x] CI pipeline
-
 ## Локальный запуск
 
 Сервисы и тесты запускаются локально, инфраструктура в docker-окружении. Для освобождения портов используйте скрипты `free-port.sh`/
@@ -34,14 +22,32 @@ npm --prefix rococo-client run dev
 
 ### Запуск сервисов
 
+Запустить модули через IDE или CLI
+
 ```bash
-./gradlew :rococo-auth:bootRun
-./gradlew :rococo-gateway:bootRun
-./gradlew :rococo-userdata:bootRun
-./gradlew :rococo-geo:bootRun
-./gradlew :rococo-artist:bootRun
-./gradlew :rococo-museum:bootRun
-./gradlew :rococo-painting:bootRun
+./gradlew :rococo-auth:bootRun --no-daemon &
+./gradlew :rococo-geo:bootRun --no-daemon &
+./gradlew :rococo-artist:bootRun --no-daemon &
+./gradlew :rococo-museum:bootRun --no-daemon &
+./gradlew :rococo-painting:bootRun --no-daemon &
+./gradlew :rococo-userdata:bootRun --no-daemon &
+./gradlew :rococo-gateway:bootRun --no-daemon &
+```
+
+### Запуск тестов
+
+Запустить тесты через IDE или CLI
+
+```bash
+./gradlew :rococo-tests:test --no-daemon
+```
+
+### Получение отчета
+
+Запустить команду из корня проекта, отчет сформируется в папке `allure-report`
+
+```bash
+./gradlew allure generate rococo-tests/build/allure-results --single-file --clean
 ```
 
 ## Запуск в docker
@@ -50,16 +56,31 @@ npm --prefix rococo-client run dev
 
 ### Запуск сервисов
 
-Запуск только сервисов без тестов
-
-```bash
-COMPOSE_PROFILES=env,modules docker compose up -d
-```
-
-Запуск всех сервисов и тестов
+Запуск сервисов и тестов
 
 ```bash
 COMPOSE_PROFILES=env,modules,tests docker compose up -d
+```
+
+Для работы с сервисами необходимы алиасы для резолвинга имён в файле `/etc/hosts`
+
+```
+127.0.0.1 	rococo-client
+127.0.0.1 	rococo-auth
+127.0.0.1 	rococo-gateway
+127.0.0.1 	rococo-artist
+127.0.0.1 	rococo-geo
+127.0.0.1 	rococo-museum
+127.0.0.1 	rococo-painting
+127.0.0.1 	rococo-userdata
+```
+
+### Получение отчета
+
+Запустить команду из корня проекта, отчет сформируется в папке `allure-report`
+
+```bash
+./gradlew allure generate --single-file --clean
 ```
 
 ## Структура сервисов:

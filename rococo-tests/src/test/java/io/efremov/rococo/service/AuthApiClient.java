@@ -38,7 +38,7 @@ public final class AuthApiClient extends RestClient {
   }
 
   @Step("Authorize user")
-  public Response<Void> authorize(String clientId, String redirectUri, String codeChallenge) {
+  public Response<ResponseBody> authorize(String clientId, String redirectUri, String codeChallenge) {
     try {
       return authApi.authorize("code", clientId, "openid", redirectUri, codeChallenge, "S256").execute();
     } catch (IOException e) {

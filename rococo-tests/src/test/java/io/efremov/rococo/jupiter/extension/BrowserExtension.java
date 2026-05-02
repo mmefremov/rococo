@@ -28,7 +28,6 @@ public class BrowserExtension implements
   @Override
   public void beforeAll(ExtensionContext context) {
     Configuration.browser = "chrome";
-    Configuration.timeout = 8000L;
     Configuration.pageLoadStrategy = "eager";
 
     if (Objects.equals(System.getProperty("test.env"), "docker")) {

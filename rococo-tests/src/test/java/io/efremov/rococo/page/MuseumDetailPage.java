@@ -1,91 +1,78 @@
 package io.efremov.rococo.page;
 
-import static com.codeborne.selenide.Condition.exactText;
+import static com.codeborne.selenide.Condition.attribute;
 import static com.codeborne.selenide.Condition.text;
 import static com.codeborne.selenide.Condition.visible;
-import static com.codeborne.selenide.Selenide.$;
-import static com.codeborne.selenide.Selenide.$$;
 
 import com.codeborne.selenide.Selenide;
 import com.codeborne.selenide.SelenideElement;
-import io.efremov.rococo.page.component.HeaderComponent;
+import io.efremov.rococo.model.MuseumInfoResponse;
 import io.efremov.rococo.page.modal.MuseumFormModal;
 import io.qameta.allure.Step;
+import java.util.UUID;
 
-public class MuseumDetailPage extends BasePage {
+public class MuseumDetailPage extends BasePage<MuseumDetailPage> {
 
-  private static final String URL = FRONT_URL + "/museum/";
+  private static final String URL = FRONT_URL + "museum/";
 
-  private final SelenideElement museumPhoto = $("img.museum, .museum-photo, .museum-image");
-  private final SelenideElement museumTitle = $("h1, .museum-title");
-  private final SelenideElement museumLocation = $(".location, .museum-location, .museum-city");
-  private final SelenideElement museumDescription = $(".description, .museum-description, p");
-  private final SelenideElement editButton = buttonByText("Редактировать");
+  private final SelenideElement title = self.find("[data-testid='museum-title']");
+  private final SelenideElement photo = self.$("[data-testid='museum-photo']");
+  private final SelenideElement description = self.find("[data-testid='museum-description']");
+  private final SelenideElement location = self.find("[data-testid='museum-location']");
+  private final SelenideElement editButton = self.find("[data-testid='edit-museum']");
 
-  private SelenideElement buttonByText(String text) {
-    return $$("button").findBy(com.codeborne.selenide.Condition.exactText(text));
-  }
+  private final MuseumFormModal formModal = new MuseumFormModal();
 
-  public HeaderComponent header = new HeaderComponent();
-
-  public static MuseumDetailPage open(String id) {
+  @Step("Open a museum detail page")
+  public static MuseumDetailPage open(UUID id) {
     return Selenide.open(URL + id, MuseumDetailPage.class);
   }
 
-  @Step("Verify museum detail page is loaded")
-  public MuseumDetailPage assertPageLoaded() {
-    museumTitle.shouldBe(visible);
+  @Override
+  @Step("Verify a museum detail page is loaded")
+  public MuseumDetailPage verifyPageLoaded() {
+    super.verifyPageLoaded();
+    title.shouldBe(visible);
+    photo.shouldBe(visible);
+    description.shouldBe(visible);
+    location.shouldBe(visible);
     return this;
   }
 
-  @Step("Get museum title")
-  public String getMuseumTitle() {
-    return museumTitle.shouldBe(visible).getText();
-  }
-
-  @Step("Get museum location")
-  public String getMuseumLocation() {
-    return museumLocation.shouldBe(visible).getText();
-  }
-
-  @Step("Get museum description")
-  public String getMuseumDescription() {
-    return museumDescription.shouldBe(visible).getText();
-  }
-
-  @Step("Verify museum photo is visible")
-  public void assertPhotoVisible() {
-    museumPhoto.shouldBe(visible);
-  }
-
-  @Step("Verify museum title equals: {expected}")
-  public void assertTitleEquals(String expected) {
-    museumTitle.shouldHave(exactText(expected));
-  }
-
-  @Step("Verify location contains: {expected}")
-  public void assertLocationContains(String expected) {
-    museumLocation.shouldHave(text(expected));
-  }
-
-  @Step("Verify description contains: {expected}")
-  public void assertDescriptionContains(String expected) {
-    museumDescription.shouldHave(text(expected));
-  }
-
-  @Step("Open edit form for museum")
-  public MuseumFormModal openEditForm() {
+  @Step("Update museum")
+  public MuseumDetailPage updateMuseum() {
     editButton.shouldBe(visible).click();
-    return new MuseumFormModal();
+    formModal.fillAllFields()
+        .submit();
+    toast.verifyAppearedMessage("Обновлен музей: " + formModal.getNewMuseumInfo().title());
+    return this;
   }
 
-  @Step("Verify edit button is visible")
-  public void assertEditButtonVisible() {
-    editButton.shouldBe(visible);
+  @Step("Verify museum is updated")
+  public MuseumDetailPage verifyMuseumIsUpdated() {
+    var updatedMuseum = formModal.getNewMuseumInfo();
+    title.shouldHave(text(updatedMuseum.title()));
+    description.shouldHave(text(updatedMuseum.description()));
+    photo.shouldHave(attribute("src", updatedMuseum.photo()));
+    String expectedText = "%s, %s".formatted(formModal.getCountryName(), updatedMuseum.geo().city());
+    location.shouldHave(text(expectedText));
+    return this;
   }
 
-  @Step("Verify edit button is not visible")
-  public void assertEditButtonNotVisible() {
+  @Step("Verify museum info")
+  public MuseumDetailPage verifyMuseumInfo(MuseumInfoResponse info) {
+    title.shouldHave(text(info.title()));
+    description.shouldHave(text(info.description()));
+    photo.shouldHave(attribute("src", info.photo()));
+    String country = info.geo().country().name();
+    String city = info.geo().city();
+    location.shouldHave(text("%s, %s".formatted(country, city)));
+    return this;
+  }
+
+  @Step("Verify editing is not available")
+  public MuseumDetailPage verifyEditingIsNotAvailable() {
     editButton.shouldNotBe(visible);
+    return this;
   }
 }

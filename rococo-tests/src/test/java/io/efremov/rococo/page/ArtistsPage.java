@@ -1,78 +1,67 @@
 package io.efremov.rococo.page;
 
-import static com.codeborne.selenide.Condition.exactText;
+import static com.codeborne.selenide.CollectionCondition.itemWithText;
 import static com.codeborne.selenide.Condition.text;
 import static com.codeborne.selenide.Condition.visible;
-import static com.codeborne.selenide.Selenide.$;
 import static com.codeborne.selenide.Selenide.$$;
 
 import com.codeborne.selenide.ElementsCollection;
 import com.codeborne.selenide.Selenide;
 import com.codeborne.selenide.SelenideElement;
-import io.efremov.rococo.page.component.HeaderComponent;
-import io.efremov.rococo.page.component.ListComponent;
 import io.efremov.rococo.page.modal.ArtistFormModal;
 import io.qameta.allure.Step;
 
-public class ArtistsPage extends BasePage {
+public class ArtistsPage extends BasePage<ArtistsPage> {
 
-  private static final String URL = FRONT_URL + "/artist";
+  private static final String URL = FRONT_URL + "artist";
 
-  private final SelenideElement pageTitle = $("h1");
-  private final SelenideElement searchInput = $("input[placeholder*='художников'], input[type='search']");
-  private final SelenideElement addArtistButton = buttonByText("Добавить художника");
+  private final SelenideElement title = self.find("h2");
+  private final SelenideElement searchInput = self.find("input[type='search']");
+  private final SelenideElement addButton = self.find("[data-testid='add-artist-button']");
 
-  private final ElementsCollection artistsList = $$(".artist-card, [data-testid='artist-item'], a[href*='/artist/']");
-  private final SelenideElement emptyState = $(".empty-state, .empty");
-  private final SelenideElement loader = $(".loader, .spinner, [class*='loading']");
+  private final ElementsCollection list = $$(".w-100 li");
+  private final ArtistFormModal formModal = new ArtistFormModal();
 
-  public HeaderComponent header = new HeaderComponent();
-  public ListComponent<ArtistDetailPage> list = new ListComponent<>(artistsList, emptyState, loader);
-
+  @Step("Open an artist page")
   public static ArtistsPage open() {
     return Selenide.open(URL, ArtistsPage.class);
   }
 
-  private SelenideElement buttonByText(String text) {
-    return $$("button").findBy(exactText(text));
-  }
-
-  @Step("Verify artists page is loaded")
-  public ArtistsPage assertPageLoaded() {
-    pageTitle.shouldBe(visible);
+  @Override
+  @Step("Verify an artist page is loaded")
+  public ArtistsPage verifyPageLoaded() {
+    super.verifyPageLoaded();
+    title.shouldBe(visible)
+        .shouldHave(text("Художники"));
     return this;
   }
 
-  @Step("Search for: {query}")
-  public ArtistsPage search(String query) {
-    searchInput.shouldBe(visible).setValue(query);
+  @Step("Verify artist is created")
+  public ArtistsPage verifyArtistIsCreated() {
+    var createdArtist = formModal.getNewArtistInfo();
+    searchInput.setValue(createdArtist.getName()).pressEnter();
+    list.shouldHave(itemWithText(createdArtist.getName()));
     return this;
   }
 
-  @Step("Open new artist form")
-  public ArtistFormModal openNewArtistForm() {
-    addArtistButton.shouldBe(visible).click();
-    return new ArtistFormModal();
+  @Step("Create new artist")
+  public ArtistsPage createNewArtist() {
+    addButton.shouldBe(visible).click();
+    formModal.fillAllFields().submit();
+    toast.verifyAppearedMessage("Добавлен художник: " + formModal.getNewArtistInfo().getName());
+    return this;
   }
 
-  @Step("Open artist by name: {name}")
+  @Step("Search and open artist by name: {name}")
   public ArtistDetailPage openArtistByName(String name) {
-    artistsList.findBy(text(name)).shouldBe(visible).click();
+    searchInput.shouldBe(visible).setValue(name).pressEnter();
+    list.findBy(text(name)).shouldBe(visible).click();
     return new ArtistDetailPage();
   }
 
-  @Step("Verify add artist button is visible")
-  public void assertAddButtonVisible() {
-    addArtistButton.shouldBe(visible);
-  }
-
-  @Step("Verify add artist button is not visible")
-  public void assertAddButtonNotVisible() {
-    addArtistButton.shouldNotBe(visible);
-  }
-
-  @Step("Verify page title equals: {expected}")
-  public void assertTitleEquals(String expected) {
-    pageTitle.shouldHave(text(expected));
+  @Step("Verify artists page editing is not available")
+  public ArtistsPage verifyEditingIsNotAvailable() {
+    addButton.shouldNotBe(visible);
+    return this;
   }
 }

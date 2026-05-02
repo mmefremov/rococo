@@ -1,74 +1,48 @@
 package io.efremov.rococo.page.modal;
 
 import static com.codeborne.selenide.Condition.visible;
-import static com.codeborne.selenide.Selenide.$;
-import static com.codeborne.selenide.Selenide.$$;
 
 import com.codeborne.selenide.SelenideElement;
+import io.efremov.rococo.grpc.CreateArtistRequest;
+import io.efremov.rococo.provider.ArtistProvider;
 import io.qameta.allure.Step;
 import java.io.File;
+import lombok.Getter;
 
 public class ArtistFormModal extends BaseModal {
 
-  private final SelenideElement nameInput = $("input[placeholder*='Имя'], input[name='name'], input#name");
-  private final SelenideElement descriptionTextarea = $(
-      "textarea[name='biography'], textarea[name='description'], textarea#biography");
-  private final SelenideElement avatarUpload = $("input[type='file'].avatar-upload, input[name='avatar']");
-  private final SelenideElement submitButton;
+  private final SelenideElement nameInput = self.find("input[name='name']");
+  private final SelenideElement biographyTextarea = self.find("textarea[name='biography']");
+  private final SelenideElement photoInput = self.find("input[name='photo']");
+  @Getter
+  private CreateArtistRequest newArtistInfo;
 
-  public ArtistFormModal() {
-    super($(".modal, [role='dialog'], .form-wrapper"));
-    this.submitButton = anyButtonByText("Сохранить", "Создать", "Обновить");
+  @Step("Fill all fields")
+  public ArtistFormModal fillAllFields() {
+    self.shouldBe(visible);
+    newArtistInfo = ArtistProvider.getCreateArtistRequest();
+    setName(newArtistInfo.getName())
+        .setBiography(newArtistInfo.getBiography())
+        .uploadPhoto(newArtistInfo.getPhoto());
+    return this;
   }
 
-  private SelenideElement anyButtonByText(String... texts) {
-    SelenideElement result = null;
-    for (String text : texts) {
-      SelenideElement candidate = $$("button").findBy(com.codeborne.selenide.Condition.exactText(text));
-      if (result == null) {
-        result = candidate;
-      }
-    }
-    return result;
+  @Step("Upload artist photo")
+  private ArtistFormModal uploadPhoto(String imageFile) {
+    File file = createTempFile(imageFile);
+    photoInput.shouldBe(visible).uploadFile(file);
+    return this;
   }
 
   @Step("Set artist name: {name}")
-  public ArtistFormModal setName(String name) {
+  private ArtistFormModal setName(String name) {
     nameInput.shouldBe(visible).setValue(name);
     return this;
   }
 
-  @Step("Set artist description: {description}")
-  public ArtistFormModal setDescription(String description) {
-    descriptionTextarea.shouldBe(visible).setValue(description);
-    return this;
-  }
-
-  @Step("Upload avatar: {filePath}")
-  public ArtistFormModal uploadAvatar(String filePath) {
-    avatarUpload.shouldBe(visible).uploadFile(new File(filePath));
-    return this;
-  }
-
-  @Override
-  @Step("Click submit in artist form")
-  public void submit() {
-    submitButton.shouldBe(visible).click();
-  }
-
-  @Step("Get artist name")
-  public String getName() {
-    return nameInput.shouldBe(visible).getValue();
-  }
-
-  @Step("Get artist description")
-  public String getDescription() {
-    return descriptionTextarea.shouldBe(visible).getValue();
-  }
-
-  @Step("Verify artist modal is visible")
-  public ArtistFormModal assertModalVisible() {
-    modalDialog.shouldBe(visible);
+  @Step("Set artist biography")
+  private ArtistFormModal setBiography(String biography) {
+    biographyTextarea.shouldBe(visible).setValue(biography);
     return this;
   }
 }

@@ -19,7 +19,7 @@ public class AuthenticationExtension implements BeforeEachCallback {
 
   private static class TokenHolder {
 
-    static final String TOKEN = AuthProvider.getAuthToken();
+    static final String TOKEN = AuthProvider.getNewUserAuthToken();
     static final String SESSION_ID = ThreadSafeCookieStore.INSTANCE.sessionId();
   }
 
@@ -40,6 +40,10 @@ public class AuthenticationExtension implements BeforeEachCallback {
 
   public static void setToken() {
     TestMethodContextExtension.context().getStore(NAMESPACE).put("token", TokenHolder.TOKEN);
+  }
+
+  public static void setToken(String token) {
+    TestMethodContextExtension.context().getStore(NAMESPACE).put("token", token);
   }
 
   public static String getToken() {

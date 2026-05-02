@@ -1,77 +1,69 @@
 package io.efremov.rococo.page;
 
+import static com.codeborne.selenide.CollectionCondition.itemWithText;
 import static com.codeborne.selenide.Condition.text;
 import static com.codeborne.selenide.Condition.visible;
-import static com.codeborne.selenide.Selenide.$;
 import static com.codeborne.selenide.Selenide.$$;
 
 import com.codeborne.selenide.ElementsCollection;
 import com.codeborne.selenide.Selenide;
 import com.codeborne.selenide.SelenideElement;
-import io.efremov.rococo.page.component.HeaderComponent;
-import io.efremov.rococo.page.component.ListComponent;
 import io.efremov.rococo.page.modal.MuseumFormModal;
 import io.qameta.allure.Step;
 
-public class MuseumsPage extends BasePage {
+public class MuseumsPage extends BasePage<MuseumsPage> {
 
-  private static final String URL = FRONT_URL + "/museum";
+  private static final String URL = FRONT_URL + "museum";
 
-  private final SelenideElement pageTitle = $("h1");
-  private final SelenideElement searchInput = $("input[placeholder*='музей'], input[type='search']");
-  private final SelenideElement addMuseumButton = buttonByText("Добавить музей");
+  private final SelenideElement title = self.find("h2");
+  private final SelenideElement searchInput = self.find("input[type='search']");
+  private final SelenideElement addButton = self.find("[data-testid='add-museum-button']");
 
-  private final ElementsCollection museumsList = $$(".museum-card, [data-testid='museum-item'], a[href*='/museum/']");
-  private final SelenideElement emptyState = $(".empty-state, .empty");
-  private final SelenideElement loader = $(".loader, .spinner, [class*='loading']");
+  private final ElementsCollection list = $$(".w-100 li");
+  private final MuseumFormModal formModal = new MuseumFormModal();
 
-  public HeaderComponent header = new HeaderComponent();
-  public ListComponent<MuseumDetailPage> list = new ListComponent<>(museumsList, emptyState, loader);
-
+  @Step("Open a museum page")
   public static MuseumsPage open() {
     return Selenide.open(URL, MuseumsPage.class);
   }
 
-  private SelenideElement buttonByText(String text) {
-    return $$("button").findBy(com.codeborne.selenide.Condition.exactText(text));
-  }
-
+  @Override
   @Step("Verify museums page is loaded")
-  public MuseumsPage assertPageLoaded() {
-    pageTitle.shouldBe(visible);
+  public MuseumsPage verifyPageLoaded() {
+    super.verifyPageLoaded();
+    title.shouldBe(visible)
+        .shouldHave(text("Музеи"));
     return this;
   }
 
-  @Step("Search for: {query}")
-  public MuseumsPage search(String query) {
-    searchInput.shouldBe(visible).setValue(query);
+  @Step("Verify museum is created")
+  public MuseumsPage verifyMuseumIsCreated() {
+    var createdMuseum = formModal.getNewMuseumInfo();
+    searchInput.setValue(createdMuseum.title()).pressEnter();
+    String expectedText = "%s\n%s, %s".formatted(
+        createdMuseum.title(), createdMuseum.geo().city(), formModal.getCountryName());
+    list.shouldHave(itemWithText(expectedText));
     return this;
   }
 
-  @Step("Open new museum form")
-  public MuseumFormModal openNewMuseumForm() {
-    addMuseumButton.shouldBe(visible).click();
-    return new MuseumFormModal();
+  @Step("Create new museum")
+  public MuseumsPage createNewMuseum() {
+    addButton.shouldBe(visible).click();
+    formModal.fillAllFields().submit();
+    toast.verifyAppearedMessage("Добавлен музей: " + formModal.getNewMuseumInfo().title());
+    return this;
   }
 
-  @Step("Open museum by name: {name}")
-  public MuseumDetailPage openMuseumByName(String name) {
-    museumsList.findBy(text(name)).shouldBe(visible).click();
+  @Step("Search and open museum by title: {title}")
+  public MuseumDetailPage openMuseumByName(String title) {
+    searchInput.shouldBe(visible).setValue(title).pressEnter();
+    list.findBy(text(title)).shouldBe(visible).click();
     return new MuseumDetailPage();
   }
 
-  @Step("Verify add museum button is visible")
-  public void assertAddButtonVisible() {
-    addMuseumButton.shouldBe(visible);
-  }
-
-  @Step("Verify add museum button is not visible")
-  public void assertAddButtonNotVisible() {
-    addMuseumButton.shouldNotBe(visible);
-  }
-
-  @Step("Verify page title equals: {expected}")
-  public void assertTitleEquals(String expected) {
-    pageTitle.shouldHave(text(expected));
+  @Step("Verify museums page editing is not available")
+  public MuseumsPage verifyEditingIsNotAvailable() {
+    addButton.shouldNotBe(visible);
+    return this;
   }
 }

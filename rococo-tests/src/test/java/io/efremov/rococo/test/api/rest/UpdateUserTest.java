@@ -6,6 +6,7 @@ import io.efremov.rococo.api.validation.RestValidation;
 import io.efremov.rococo.jupiter.annotation.Authentication;
 import io.efremov.rococo.model.UpdateUserInfoRequest;
 import io.efremov.rococo.model.UserInfoResponse;
+import io.efremov.rococo.provider.UserProvider;
 import io.efremov.rococo.service.GatewayApiClient;
 import io.efremov.rococo.util.RandomDataUtils;
 import io.qameta.allure.Epic;
@@ -28,14 +29,7 @@ import retrofit2.Response;
 class UpdateUserTest {
 
   private final GatewayApiClient client = new GatewayApiClient();
-  private final Model<UpdateUserInfoRequest> model = Instancio.of(UpdateUserInfoRequest.class)
-      .generate(Select.field(UpdateUserInfoRequest::firstname),
-          gen -> gen.oneOf(RandomDataUtils.randomFirstName(), null))
-      .generate(Select.field(UpdateUserInfoRequest::lastname),
-          gen -> gen.oneOf(RandomDataUtils.randomLastName(), null))
-      .generate(Select.field(UpdateUserInfoRequest::avatar),
-          gen -> gen.oneOf(RandomDataUtils.randomPhoto(), null))
-      .toModel();
+  private final Model<UpdateUserInfoRequest> model = UserProvider.getUpdateUserRequestModel();
 
   @Test
   @Authentication

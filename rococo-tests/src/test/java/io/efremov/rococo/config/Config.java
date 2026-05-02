@@ -7,11 +7,9 @@ public interface Config {
 
   @NonNull
   static Config getInstance() {
-    return switch (System.getProperty("test.env")) {
-      case "docker" -> DockerConfig.INSTANCE;
-      case "hybrid" -> HybridConfig.INSTANCE;
-      default -> LocalConfig.INSTANCE;
-    };
+    return "docker".equals(System.getProperty("test.env"))
+        ? DockerConfig.INSTANCE
+        : LocalConfig.INSTANCE;
   }
 
   @NonNull

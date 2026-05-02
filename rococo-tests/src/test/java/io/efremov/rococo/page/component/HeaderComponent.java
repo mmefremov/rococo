@@ -1,51 +1,47 @@
 package io.efremov.rococo.page.component;
 
+import static com.codeborne.selenide.Condition.enabled;
 import static com.codeborne.selenide.Condition.not;
 import static com.codeborne.selenide.Condition.visible;
 import static com.codeborne.selenide.Selenide.$;
 
 import com.codeborne.selenide.SelenideElement;
 import io.efremov.rococo.page.ArtistsPage;
+import io.efremov.rococo.page.LoginPage;
 import io.efremov.rococo.page.MuseumsPage;
 import io.efremov.rococo.page.PaintingsPage;
-import io.efremov.rococo.page.modal.UserModal;
 import io.qameta.allure.Step;
 
 public class HeaderComponent {
 
   private final SelenideElement self = $("div[data-testid='app-bar']");
-  private final SelenideElement paintingsLink = self.find("a[href='/painting']");
-  private final SelenideElement artistsLink = self.find("a[href='/artist']");
-  private final SelenideElement museumsLink = self.find("a[href='/museum']");
-  private final SelenideElement loginButton = self.find(".app-bar-slot-trail .btn");
-  private final SelenideElement userAvatar = self.find("img.avatar, .avatar");
+  private final SelenideElement paintingsLink = self.find("[data-testid='painting-page-link']");
+  private final SelenideElement artistsLink = self.find("[data-testid='artist-page-link']");
+  private final SelenideElement museumsLink = self.find("[data-testid='museum-page-link']");
+  private final SelenideElement loginButton = self.find("[data-testid='login-button']");
+  private final SelenideElement userAvatar = self.find("[data-testid='profile-button']");
 
   @Step("Verify the header is visible")
   public void shouldBeVisible() {
     self.shouldBe(visible);
+    paintingsLink.shouldBe(visible);
+    artistsLink.shouldBe(visible);
+    museumsLink.shouldBe(visible);
   }
 
-  @Step("Navigate to paintings page")
   public PaintingsPage goToPaintings() {
     paintingsLink.shouldBe(visible).click();
     return new PaintingsPage();
   }
 
-  @Step("Navigate to artists page")
   public ArtistsPage goToArtists() {
     artistsLink.shouldBe(visible).click();
     return new ArtistsPage();
   }
 
-  @Step("Navigate to museums page")
   public MuseumsPage goToMuseums() {
     museumsLink.shouldBe(visible).click();
     return new MuseumsPage();
-  }
-
-  @Step("Click login button")
-  public void clickLogin() {
-    loginButton.shouldBe(visible).click();
   }
 
   public void isLoggedIn() {
@@ -53,14 +49,19 @@ public class HeaderComponent {
     userAvatar.shouldBe(visible);
   }
 
-  @Step("Open profile modal")
-  public UserModal openProfileModal() {
-    userAvatar.shouldBe(visible).click();
-    return new UserModal();
+  public void isNotLoggedIn() {
+    loginButton.shouldBe(visible);
+    userAvatar.shouldBe(not(visible));
   }
 
-  @Step("Verify login button is visible")
-  public void assertLoginButtonVisible() {
-    loginButton.shouldBe(visible);
+  @Step("Open profile modal")
+  public void openProfileModal() {
+    userAvatar.shouldBe(visible).click();
+  }
+
+  @Step("Click to login button")
+  public LoginPage clickLoginButton() {
+    loginButton.shouldBe(visible).shouldBe(enabled).click();
+    return new LoginPage();
   }
 }

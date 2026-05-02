@@ -1,82 +1,47 @@
 package io.efremov.rococo.page;
 
-import static com.codeborne.selenide.Condition.exactText;
+import static com.codeborne.selenide.CollectionCondition.itemWithText;
+import static com.codeborne.selenide.Condition.attribute;
 import static com.codeborne.selenide.Condition.text;
 import static com.codeborne.selenide.Condition.visible;
-import static com.codeborne.selenide.Selenide.$;
-import static com.codeborne.selenide.Selenide.$$;
 
 import com.codeborne.selenide.ElementsCollection;
 import com.codeborne.selenide.Selenide;
 import com.codeborne.selenide.SelenideElement;
-import io.efremov.rococo.page.component.HeaderComponent;
-import io.efremov.rococo.page.component.ListComponent;
+import io.efremov.rococo.model.ArtistInfoResponse;
 import io.efremov.rococo.page.modal.ArtistFormModal;
 import io.efremov.rococo.page.modal.PaintingFormModal;
 import io.qameta.allure.Step;
+import java.util.UUID;
 
-public class ArtistDetailPage extends BasePage {
+public class ArtistDetailPage extends BasePage<ArtistDetailPage> {
 
-  private static final String URL = FRONT_URL + "/artist/";
+  private static final String URL = FRONT_URL + "artist/";
 
-  private final SelenideElement artistAvatar = $("img.avatar, .artist-avatar img, .artist-photo");
-  private final SelenideElement artistName = $("h1, .artist-name");
-  private final SelenideElement artistBiography = $(".biography, .artist-bio, p");
-  private final SelenideElement editButton = buttonByText("Редактировать");
-  private final SelenideElement addPaintingButton = buttonByText("Добавить картину");
+  private final SelenideElement name = self.find("[data-testid='artist-name']");
+  private final SelenideElement avatar = self.find("[data-testid='avatar']");
+  private final SelenideElement photo = avatar.$("img");
+  private final SelenideElement biography = self.find("[data-testid='artist-biography']");
+  private final SelenideElement editButton = self.find("[data-testid='edit-artist']");
+  private final SelenideElement addPaintingButton = self.find("[data-testid='add-painting-button']");
+  private final ElementsCollection paintingCards = self.findAll(".w-100 div");
 
-  private final ElementsCollection paintingsList = $$(
-      ".painting-card, [data-testid='painting-item'], a[href*='/painting/']");
-  private final SelenideElement paintingsEmptyState = $(".empty-state, .empty");
-  private final SelenideElement paintingsLoader = $(".loader, .spinner, [class*='loading']");
+  private final PaintingFormModal paintingFormModal = new PaintingFormModal();
+  private final ArtistFormModal artistFormModal = new ArtistFormModal();
 
-  public HeaderComponent header = new HeaderComponent();
-  public ListComponent<PaintingDetailPage> paintingsListComponent =
-      new ListComponent<>(paintingsList, paintingsEmptyState, paintingsLoader);
-
-  public static ArtistDetailPage open(String id) {
+  @Step("Open an artist detail page")
+  public static ArtistDetailPage open(UUID id) {
     return Selenide.open(URL + id, ArtistDetailPage.class);
   }
 
-  private SelenideElement buttonByText(String text) {
-    return $$("button").findBy(com.codeborne.selenide.Condition.exactText(text));
-  }
-
-  @Step("Verify artist detail page is loaded")
-  public ArtistDetailPage assertPageLoaded() {
-    artistName.shouldBe(visible);
+  @Override
+  @Step("Verify an artist detail page is loaded")
+  public ArtistDetailPage verifyPageLoaded() {
+    super.verifyPageLoaded();
+    name.shouldBe(visible);
+    avatar.shouldBe(visible);
+    biography.shouldBe(visible);
     return this;
-  }
-
-  @Step("Get artist name")
-  public String getArtistName() {
-    return artistName.shouldBe(visible).getText();
-  }
-
-  @Step("Get artist biography")
-  public String getArtistBiography() {
-    return artistBiography.shouldBe(visible).getText();
-  }
-
-  @Step("Verify artist avatar is visible")
-  public void assertAvatarVisible() {
-    artistAvatar.shouldBe(visible);
-  }
-
-  @Step("Verify artist name equals: {expected}")
-  public void assertNameEquals(String expected) {
-    artistName.shouldHave(exactText(expected));
-  }
-
-  @Step("Verify biography contains: {expected}")
-  public void assertBiographyContains(String expected) {
-    artistBiography.shouldHave(text(expected));
-  }
-
-  @Step("Open edit form for artist")
-  public ArtistFormModal openEditForm() {
-    editButton.shouldBe(visible).click();
-    return new ArtistFormModal();
   }
 
   @Step("Open new painting form from artist page")
@@ -85,23 +50,56 @@ public class ArtistDetailPage extends BasePage {
     return new PaintingFormModal();
   }
 
-  @Step("Verify edit button is visible")
-  public void assertEditButtonVisible() {
-    editButton.shouldBe(visible);
+  @Step("Update artist")
+  public ArtistDetailPage updateArtist() {
+    editButton.shouldBe(visible).click();
+    artistFormModal.fillAllFields().submit();
+    toast.verifyAppearedMessage("Обновлен художник: " + artistFormModal.getNewArtistInfo().getName());
+    return this;
   }
 
-  @Step("Verify edit button is not visible")
-  public void assertEditButtonNotVisible() {
+  @Step("Verify artist is updated")
+  public ArtistDetailPage verifyArtistIsUpdated() {
+    var updatedArtist = artistFormModal.getNewArtistInfo();
+    name.shouldHave(text(updatedArtist.getName()));
+    biography.shouldHave(text(updatedArtist.getBiography()));
+    photo.shouldHave(attribute("src", updatedArtist.getPhoto()));
+    return this;
+  }
+
+  @Step("Verify artist info")
+  public ArtistDetailPage verifyArtistInfo(ArtistInfoResponse info) {
+    name.shouldHave(text(info.name()));
+    biography.shouldHave(text(info.biography()));
+    photo.shouldHave(attribute("src", info.photo()));
+    return this;
+  }
+
+  @Step("Create new painting")
+  public ArtistDetailPage createNewPainting() {
+    addPaintingButton.shouldBe(visible).click();
+    paintingFormModal.fillAllFieldsExceptAuthor().submit();
+    toast.verifyAppearedMessage("Добавлена картина: " + paintingFormModal.getNewPaintingInfo().title());
+    return this;
+  }
+
+  @Step("Verify painting is created")
+  public ArtistDetailPage verifyPaintingIsCreated() {
+    var createdPainting = paintingFormModal.getNewPaintingInfo();
+    paintingCards.shouldHave(itemWithText(createdPainting.title()));
+    return this;
+  }
+
+  @Step("Verify editing is not available")
+  public ArtistDetailPage verifyEditingIsNotAvailable() {
     editButton.shouldNotBe(visible);
-  }
-
-  @Step("Verify add painting button is visible")
-  public void assertAddPaintingButtonVisible() {
-    addPaintingButton.shouldBe(visible);
-  }
-
-  @Step("Verify add painting button is not visible")
-  public void assertAddPaintingButtonNotVisible() {
     addPaintingButton.shouldNotBe(visible);
+    return this;
+  }
+
+  @Step("Open painting by title: {title}")
+  public PaintingDetailPage openPaintingByTitle(String title) {
+    paintingCards.findBy(text(title)).shouldBe(visible).click();
+    return new PaintingDetailPage();
   }
 }

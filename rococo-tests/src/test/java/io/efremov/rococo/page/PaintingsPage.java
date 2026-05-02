@@ -1,78 +1,66 @@
 package io.efremov.rococo.page;
 
+import static com.codeborne.selenide.CollectionCondition.itemWithText;
 import static com.codeborne.selenide.Condition.text;
 import static com.codeborne.selenide.Condition.visible;
-import static com.codeborne.selenide.Selenide.$;
 import static com.codeborne.selenide.Selenide.$$;
 
 import com.codeborne.selenide.ElementsCollection;
 import com.codeborne.selenide.Selenide;
 import com.codeborne.selenide.SelenideElement;
-import io.efremov.rococo.page.component.HeaderComponent;
-import io.efremov.rococo.page.component.ListComponent;
 import io.efremov.rococo.page.modal.PaintingFormModal;
 import io.qameta.allure.Step;
 
-public class PaintingsPage extends BasePage {
+public class PaintingsPage extends BasePage<PaintingsPage> {
 
-  private static final String URL = FRONT_URL + "/painting";
+  private static final String URL = FRONT_URL + "painting";
 
-  private final SelenideElement pageTitle = $("h1");
-  private final SelenideElement searchInput = $("input[placeholder*='картины'], input[type='search']");
-  private final SelenideElement addPaintingButton = buttonByText("Добавить картину");
+  private final SelenideElement title = self.find("h2");
+  private final SelenideElement searchInput = self.find("input[type='search']");
+  private final SelenideElement addButton = self.find("[data-testid='add-painting-button']");
 
-  private final ElementsCollection paintingsList = $$(
-      ".painting-card, [data-testid='painting-item'], a[href*='/painting/']");
-  private final SelenideElement emptyState = $(".empty-state, .empty");
-  private final SelenideElement loader = $(".loader, .spinner, [class*='loading']");
+  private final ElementsCollection list = $$(".w-100 li");
+  private final PaintingFormModal formModal = new PaintingFormModal();
 
-  public HeaderComponent header = new HeaderComponent();
-  public ListComponent<PaintingDetailPage> list = new ListComponent<>(paintingsList, emptyState, loader);
-
+  @Step("Open a painting page")
   public static PaintingsPage open() {
     return Selenide.open(URL, PaintingsPage.class);
   }
 
-  private SelenideElement buttonByText(String text) {
-    return $$("button").findBy(com.codeborne.selenide.Condition.exactText(text));
-  }
-
-  @Step("Verify paintings page is loaded")
-  public PaintingsPage assertPageLoaded() {
-    pageTitle.shouldBe(visible);
+  @Override
+  @Step("Verify a paintings page is loaded")
+  public PaintingsPage verifyPageLoaded() {
+    title.shouldBe(visible)
+        .shouldHave(text("Картины"));
     return this;
   }
 
-  @Step("Search for: {query}")
-  public PaintingsPage search(String query) {
-    searchInput.shouldBe(visible).setValue(query);
+  @Step("Verify painting is created")
+  public PaintingsPage verifyPaintingIsCreated() {
+    var createdPainting = formModal.getNewPaintingInfo();
+    searchInput.setValue(createdPainting.title()).pressEnter();
+    list.shouldHave(itemWithText(createdPainting.title()));
     return this;
   }
 
-  @Step("Open new painting form")
-  public PaintingFormModal openNewPaintingForm() {
-    addPaintingButton.shouldBe(visible).click();
-    return new PaintingFormModal();
+  @Step("Create new painting")
+  public PaintingsPage createNewPainting() {
+    addButton.shouldBe(visible).click();
+    formModal.fillAllFields().submit();
+    toast.verifyAppearedMessage("Добавлена картина: " + formModal.getNewPaintingInfo().title());
+    return this;
   }
 
-  @Step("Open painting by name: {name}")
-  public PaintingDetailPage openPaintingByName(String name) {
-    paintingsList.findBy(text(name)).shouldBe(visible).click();
+  @Step("Search and open painting by title: {title}")
+  public PaintingDetailPage openPaintingByTitle(String title) {
+    searchInput.shouldBe(visible).setValue(title).pressEnter();
+    list.findBy(text(title)).shouldBe(visible).click();
     return new PaintingDetailPage();
   }
 
-  @Step("Verify add painting button is visible")
-  public void assertAddButtonVisible() {
-    addPaintingButton.shouldBe(visible);
-  }
-
-  @Step("Verify add painting button is not visible")
-  public void assertAddButtonNotVisible() {
-    addPaintingButton.shouldNotBe(visible);
-  }
-
-  @Step("Verify page title equals: {expected}")
-  public void assertTitleEquals(String expected) {
-    pageTitle.shouldHave(text(expected));
+  @Step("Verify paintings page editing is not available")
+  public PaintingsPage verifyEditingIsNotAvailable() {
+    addButton.shouldNotBe(visible);
+    return this;
   }
 }

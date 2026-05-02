@@ -4,17 +4,17 @@
 <nav class={`list-nav ${isBigScreen ? "hidden md:block" : "md:hidden w-full"}`}>
     <ul class={`flex items-baseline ${!isBigScreen ? "justify-around" : ""}`}>
         <li>
-            <a href="/painting">
+            <a data-testid="painting-page-link" href="/painting">
                 Картины
             </a>
         </li>
         <li>
-            <a href="/artist">
+            <a data-testid="artist-page-link" href="/artist">
                 Художники
             </a>
         </li>
         <li>
-            <a href="/museum">
+            <a data-testid="museum-page-link" href="/museum">
                 Музеи
             </a>
         </li>

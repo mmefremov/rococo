@@ -1,55 +1,51 @@
 package io.efremov.rococo.page.modal;
 
+import static com.codeborne.selenide.Condition.appear;
+import static com.codeborne.selenide.Condition.attribute;
+import static com.codeborne.selenide.Condition.empty;
+import static com.codeborne.selenide.Condition.text;
+import static com.codeborne.selenide.Condition.value;
 import static com.codeborne.selenide.Condition.visible;
-import static com.codeborne.selenide.Selenide.$;
-import static com.codeborne.selenide.Selenide.$$;
 
 import com.codeborne.selenide.SelenideElement;
+import io.efremov.rococo.model.UpdateUserInfoRequest;
+import io.efremov.rococo.model.UserInfoResponse;
+import io.efremov.rococo.service.GatewayApiClient;
 import io.qameta.allure.Step;
 import java.io.File;
+import java.util.Objects;
 
 public class UserModal extends BaseModal {
 
-  private final SelenideElement avatar = $("img.avatar, .user-avatar img");
-  private final SelenideElement usernameDisplay = $(".username, .user-username, [class*='username']");
-  private final SelenideElement firstNameInput = $(
-      "input[placeholder*='Имя'], input[name='firstName'], input#firstName");
-  private final SelenideElement lastNameInput = $(
-      "input[placeholder*='Фамилия'], input[name='lastName'], input#lastName");
-  private final SelenideElement updateProfileButton = buttonByText("Обновить профиль");
-  private final SelenideElement logoutButton = buttonByText("Выйти");
-  private final SelenideElement imageUploadInput = $("input[type='file'].avatar-upload, input[name='avatar']");
+  private final SelenideElement avatar = self.find(".avatar img");
+  private final SelenideElement username = self.find("h4");
+  private final SelenideElement photoInput = self.find("input[name='content']");
+  private final SelenideElement firstNameInput = self.find("input[name='firstname']");
+  private final SelenideElement surnameInput = self.find("input[name='surname']");
+  private final SelenideElement logoutButton = self.find("button.variant-ghost");
+  private UpdateUserInfoRequest updatedInfo;
 
-  public UserModal() {
-    super($(".modal, [role='dialog'], .form-wrapper"));
-  }
-
-  private SelenideElement buttonByText(String text) {
-    return $$("button").findBy(com.codeborne.selenide.Condition.exactText(text));
-  }
-
-  @Step("Set first name: {firstName}")
-  public UserModal setFirstName(String firstName) {
-    firstNameInput.shouldBe(visible).setValue(firstName);
+  @Step("Verify user info")
+  public UserModal verifyUserInfo() {
+    UserInfoResponse info = new GatewayApiClient().getUser().body();
+    if (Objects.isNull(info.avatar())) {
+      avatar.shouldNotBe(appear);
+    } else {
+      avatar.shouldHave(attribute("src", info.avatar()));
+    }
+    username.shouldHave(text(info.username()));
+    photoInput.shouldBe(empty);
+    if (Objects.isNull(info.firstname())) {
+      firstNameInput.shouldBe(empty);
+    } else {
+      firstNameInput.shouldHave(value(info.firstname()));
+    }
+    if (Objects.isNull(info.lastname())) {
+      surnameInput.shouldBe(empty);
+    } else {
+      surnameInput.shouldHave(value(info.lastname()));
+    }
     return this;
-  }
-
-  @Step("Set last name: {lastName}")
-  public UserModal setLastName(String lastName) {
-    lastNameInput.shouldBe(visible).setValue(lastName);
-    return this;
-  }
-
-  @Step("Upload avatar: {filePath}")
-  public UserModal uploadAvatar(String filePath) {
-    imageUploadInput.shouldBe(visible).uploadFile(new File(filePath));
-    return this;
-  }
-
-  @Override
-  @Step("Click update profile button")
-  public void submit() {
-    updateProfileButton.shouldBe(visible).click();
   }
 
   @Step("Click logout button")
@@ -57,28 +53,53 @@ public class UserModal extends BaseModal {
     logoutButton.shouldBe(visible).click();
   }
 
-  @Step("Get displayed username")
-  public String getDisplayedUsername() {
-    return usernameDisplay.shouldBe(visible).getText();
+  @Step("Fill all fields")
+  public UserModal fillAllFields(UpdateUserInfoRequest info) {
+    updatedInfo = info;
+    self.shouldBe(visible);
+    setFirstName(updatedInfo.firstname())
+        .setLastName(updatedInfo.lastname())
+        .uploadPhoto(updatedInfo.avatar());
+    return this;
   }
 
-  @Step("Get first name")
-  public String getFirstName() {
-    return firstNameInput.shouldBe(visible).getValue();
+  @Step("Verify user info is updated")
+  public void verifyUserInfoIsUpdated() {
+    if (Objects.isNull(updatedInfo.avatar())) {
+      avatar.shouldNotBe(appear);
+    } else {
+      avatar.shouldHave(attribute("src", updatedInfo.avatar()));
+    }
+    photoInput.shouldBe(empty);
+    if (Objects.isNull(updatedInfo.firstname())) {
+      firstNameInput.shouldBe(empty);
+    } else {
+      firstNameInput.shouldHave(value(updatedInfo.firstname()));
+    }
+    if (Objects.isNull(updatedInfo.lastname())) {
+      surnameInput.shouldBe(empty);
+    } else {
+      surnameInput.shouldHave(value(updatedInfo.lastname()));
+    }
   }
 
-  @Step("Get last name")
-  public String getLastName() {
-    return lastNameInput.shouldBe(visible).getValue();
+  @Step("Set first name: {firstName}")
+  private UserModal setFirstName(String firstName) {
+    firstNameInput.shouldBe(visible).setValue(firstName);
+    return this;
   }
 
-  @Step("Verify avatar is visible")
-  public void assertAvatarVisible() {
-    avatar.shouldBe(visible);
+  @Step("Set last name: {lastName}")
+  private UserModal setLastName(String lastName) {
+    surnameInput.shouldBe(visible).setValue(lastName);
+    return this;
   }
 
-  @Step("Verify logout button is visible")
-  public void assertLogoutButtonVisible() {
-    logoutButton.shouldBe(visible);
+  @Step("Upload user photo")
+  private void uploadPhoto(String imageFile) {
+    if (imageFile != null) {
+      File file = createTempFile(imageFile);
+      photoInput.shouldBe(visible).uploadFile(file);
+    }
   }
 }

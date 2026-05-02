@@ -14,6 +14,7 @@
             store={artistsStore}
             loadFunction={apiClient.loadArtists}
             addButtonName="Добавить художника"
+            addButtonDataTestId="add-artist-button"
             pageTitle="Художники"
             searchPlaceholder="Искать художников..."
             formComponent={NewArtistForm}

@@ -11,8 +11,18 @@ public class UserRepository {
   public UserEntity findByUsername(String username) {
     try (EntityManager manager = Database.USERDATA.getManager()) {
       return manager.createQuery(
-              "SELECT u FROM UserEntity u WHERE u.userName = :username", UserEntity.class)
+              "FROM UserEntity WHERE userName = :username", UserEntity.class)
           .setParameter("username", username)
+          .getSingleResult();
+    }
+  }
+
+  @Step("Find any user entity")
+  public UserEntity findAnyUser() {
+    try (EntityManager manager = Database.USERDATA.getManager()) {
+      return manager.createQuery(
+              "FROM UserEntity ORDER BY RANDOM()", UserEntity.class)
+          .setMaxResults(1)
           .getSingleResult();
     }
   }

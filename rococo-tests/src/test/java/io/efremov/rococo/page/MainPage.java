@@ -1,38 +1,31 @@
 package io.efremov.rococo.page;
 
 import static com.codeborne.selenide.Condition.visible;
-import static com.codeborne.selenide.Selenide.$;
 
 import com.codeborne.selenide.Selenide;
 import com.codeborne.selenide.SelenideElement;
-import io.efremov.rococo.page.component.HeaderComponent;
 import io.qameta.allure.Step;
 
-public class MainPage extends BasePage {
+public class MainPage extends BasePage<MainPage> {
 
-  private static final String URL = FRONT_URL + "/";
+  private static final String URL = FRONT_URL;
+  private final SelenideElement paintingsCard = self.find("[data-testid='painting-page-link']");
+  private final SelenideElement artistsCard = self.find("[data-testid='artist-page-link']");
+  private final SelenideElement museumsCard = self.find("[data-testid='museum-page-link']");
 
-  private final HeaderComponent header = new HeaderComponent();
-  private final SelenideElement paintingsCard = $("a[href='/painting'].card, a[href='/painting']");
-  private final SelenideElement artistsCard = $("a[href='/artist'].card, a[href='/artist']");
-  private final SelenideElement museumsCard = $("a[href='/museum'].card, a[href='/museum']");
-
+  @Step("Open a main page")
   public static MainPage open() {
-    return Selenide.open(URL, MainPage.class);
+    return Selenide.open(URL, MainPage.class)
+        .verifyPageLoaded();
   }
 
-  @Step("Verify main page is loaded")
+  @Override
+  @Step("Verify a main page is loaded")
   public MainPage verifyPageLoaded() {
-    header.shouldBeVisible();
-    verifyPaintingsCardVisible();
-    verifyArtistsCardVisible();
-    verifyMuseumsCardVisible();
-    return this;
-  }
-
-  @Step("Verify user is logged in")
-  public MainPage verifyUserIsLoggedIn() {
-    header.isLoggedIn();
+    super.verifyPageLoaded();
+    paintingsCard.shouldBe(visible);
+    artistsCard.shouldBe(visible);
+    museumsCard.shouldBe(visible);
     return this;
   }
 
@@ -52,20 +45,5 @@ public class MainPage extends BasePage {
   public MuseumsPage goToMuseumsCard() {
     museumsCard.shouldBe(visible).click();
     return new MuseumsPage();
-  }
-
-  @Step("Verify paintings card is visible")
-  private void verifyPaintingsCardVisible() {
-    paintingsCard.shouldBe(visible);
-  }
-
-  @Step("Verify artists card is visible")
-  private void verifyArtistsCardVisible() {
-    artistsCard.shouldBe(visible);
-  }
-
-  @Step("Verify museums card is visible")
-  private void verifyMuseumsCardVisible() {
-    museumsCard.shouldBe(visible);
   }
 }

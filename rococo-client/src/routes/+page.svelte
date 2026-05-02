@@ -12,18 +12,21 @@
 				linkText="Картины"
 				src="/piones-dtuchs.jpeg"
 				altText="Ссылка на картины"
+				dataTestId="painting-page-link"
 		/>
 		<MainPageMenuItem
 				link="/artist"
 				linkText="Художники"
 				src="/renuar.jpeg"
 				altText="Ссылка на художников"
+				dataTestId="artist-page-link"
 		/>
 		<MainPageMenuItem
 				link="/museum"
 				linkText="Музеи"
 				src="/hermitage.jpg"
 				altText="Ссылка на музеи"
+				dataTestId="museum-page-link"
 		/>
 	</ul>
 </nav>

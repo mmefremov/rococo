@@ -67,11 +67,11 @@ jobs:
           ./gradlew :rococo-tests:build -x test
           docker build -f rococo-tests/Dockerfile -t rococo-tests:latest .
 
-      # Step 3: Start infra + services and run integration tests
+      # Step 3: Start infra + services and run tests
       - name: Wait for Selenoid Chrome image
         run: while [ ! -f /tmp/chrome-ready ]; do sleep 1; done
 
-      - name: Run integration tests
+      - name: Run tests
         run: COMPOSE_PROFILES=env,modules,tests docker compose up --exit-code-from rococo-tests
         continue-on-error: true
 
@@ -96,7 +96,7 @@ jobs:
           path: allure-report/
           retention-days: 14
 
-      # Step 6: Publish combined test results (Job Summary + PR comment)
+      # Step 6: Publish test results
       - name: Publish test results
         if: always()
         uses: actions/github-script@v7
@@ -104,65 +104,5 @@ jobs:
           ARTIFACT_URL: ${{ steps.upload-report.outputs.artifact-url }}
         with:
           script: |
-            const fs = require('fs');
-
-            function parseXmlFiles(files) {
-              let tests = 0, failures = 0, errors = 0, skipped = 0;
-              for (const file of files) {
-                try {
-                  const content = fs.readFileSync(file, 'utf8');
-                  for (const match of content.matchAll(/<testsuite\b[^>]*>/g)) {
-                    const attr = (name) => parseInt(match[0].match(new RegExp(`${name}="(\\d+)"`))?.[1] ?? '0');
-                    tests    += attr('tests');
-                    failures += attr('failures');
-                    errors   += attr('errors');
-                    skipped  += attr('skipped');
-                  }
-                } catch (_) {}
-              }
-              return { tests, passed: tests - failures - errors - skipped, failures, errors, skipped };
-            }
-
-            function badge(label, r) {
-              const enc = (s) => encodeURIComponent(s).replace(/-/g, '--');
-              if (r.tests === 0) return `![${label}](https://img.shields.io/badge/${enc(label)}-no_results-lightgrey)`;
-              const msg = `${r.passed}/${r.tests} passed`;
-              const color = (r.failures + r.errors) > 0 ? 'red' : 'brightgreen';
-              return `![${label}](https://img.shields.io/badge/${enc(label)}-${enc(msg)}-${color})`;
-            }
-
-            const globber = await glob.create('**/build/test-results/**/TEST-*.xml');
-            const allFiles = await globber.glob();
-
-            const unitFiles = allFiles.filter(f => !f.includes('rococo-tests/'));
-            const e2eFiles  = allFiles.filter(f => f.includes('rococo-tests/'));
-            const apiFiles  = e2eFiles.filter(f => /\/\w*[Aa]pi\//.test(f));
-            const uiFiles   = e2eFiles.filter(f => /\/\w*[Uu]i\//.test(f));
-
-            const unit = parseXmlFiles(unitFiles);
-            const api  = parseXmlFiles(apiFiles);
-            const ui   = parseXmlFiles(uiFiles);
-
-            const badges = [
-              badge('Unit Tests', unit),
-              badge('API Tests', api),
-              badge('UI Tests', ui),
-            ].join('\n');
-
-            const artifactUrl = process.env.ARTIFACT_URL;
-            const reportBadge = artifactUrl
-              ? `\n[![Allure Report](https://img.shields.io/badge/Allure-report.zip-blueviolet)](${artifactUrl})`
-              : '';
-
-            // Job Summary
-            await core.summary.addRaw(badges + reportBadge).write();
-
-            // PR comment
-            if (context.eventName === 'pull_request') {
-              await github.rest.issues.createComment({
-                owner: context.repo.owner,
-                repo:  context.repo.repo,
-                issue_number: context.issue.number,
-                body: badges + reportBadge,
-              });
-            }
+            const script = require('./.github/scripts/publish-test-results.js');
+            await script({ github, context, core, glob });
