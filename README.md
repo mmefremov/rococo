@@ -1,5 +1,20 @@
 # Rococo
 
+## Структура проекта
+
+* auth - аутентификация и авторизация (OAuth2/JWT)
+* gateway - обработка клиентских запросов и маршрутизация
+* userdata - информация о пользователе
+* museum - информация о музеях
+* artist - информация о художниках
+* painting - информация о картинах
+
+<img src="structure.png" width="600">
+
+### Техстек
+
+Java 21 : Gradle : SpringBoot 3 : Kafka : gRPC : PostgreSql : JUnit 5 : Retrofit : Selenide : Selenoid : Allure
+
 ## Локальный запуск
 
 Сервисы и тесты запускаются локально, инфраструктура в docker-окружении. Для освобождения портов используйте скрипты `free-port.sh`/
@@ -62,7 +77,7 @@ npm --prefix rococo-client run dev
 COMPOSE_PROFILES=env,modules,tests docker compose up -d
 ```
 
-Для работы с сервисами необходимы алиасы для резолвинга имён в файле `/etc/hosts`
+Для работы с сервисами необходимы алиасы для резолвинга имён контейнеров в файле `/etc/hosts`
 
 ```
 127.0.0.1 	rococo-client
@@ -83,9 +98,6 @@ COMPOSE_PROFILES=env,modules,tests docker compose up -d
 ./gradlew allure generate --single-file --clean
 ```
 
-## Структура сервисов:
-
-<img src="structure.png" width="600">
 
 
 
