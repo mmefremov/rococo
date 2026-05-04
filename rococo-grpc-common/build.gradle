@@ -2,7 +2,6 @@ plugins {
     id 'com.google.protobuf' version "${protobufPluginVersion}"
 }
 
-group = 'io.efremov'
 version = '1.0.0'
 
 dependencies {
@@ -13,7 +12,7 @@ dependencies {
         exclude group: 'com.google.protobuf'
     }
     implementation "com.google.protobuf:protobuf-java-util:${project.ext.protobufVersion}"
-    compileOnly 'jakarta.annotation:jakarta.annotation-api:1.3.5'
+    compileOnly "jakarta.annotation:jakarta.annotation-api:${project.ext.jakartaAnnotationVersion}"
 }
 
 protobuf {

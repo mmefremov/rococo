@@ -1,8 +1,7 @@
 plugins {
-    id 'org.springframework.boot' version '3.5.8'
+    id 'org.springframework.boot'
 }
 
-group = 'io.efremov'
 version = '1.0.0'
 
 dependencies {
@@ -12,22 +11,8 @@ dependencies {
     implementation 'org.springframework.boot:spring-boot-starter-data-jpa'
     implementation 'org.springframework.boot:spring-boot-starter-thymeleaf'
     implementation 'org.springframework.boot:spring-boot-starter-validation'
-    implementation "org.flywaydb:flyway-core:${project.ext.flywayVersion}"
-    implementation "org.flywaydb:flyway-database-postgresql:${project.ext.flywayVersion}"
+    implementation "org.flywaydb:flyway-core:${flywayVersion}"
+    implementation "org.flywaydb:flyway-database-postgresql:${flywayVersion}"
     implementation 'org.springframework.kafka:spring-kafka'
-    annotationProcessor "org.projectlombok:lombok:${project.ext.lombokVersion}"
-    compileOnly "org.projectlombok:lombok:${project.ext.lombokVersion}"
-    runtimeOnly "org.postgresql:postgresql:${project.ext.postgresDriverVersion}"
-
-    testImplementation 'org.springframework.boot:spring-boot-starter-test'
-}
-
-tasks.register('printVersion') {
-    doLast {
-        println version
-    }
-}
-
-tasks.named('test') {
-    useJUnitPlatform()
+    runtimeOnly "org.postgresql:postgresql:${postgresDriverVersion}"
 }

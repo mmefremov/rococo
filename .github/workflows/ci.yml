@@ -51,11 +51,9 @@ jobs:
             touch /tmp/chrome-ready
           ) &
 
-      # Step 1: Build all modules + unit tests
       - name: Build & run unit tests
         run: ./gradlew build -x :rococo-tests:compileTestJava -x :rococo-tests:testClasses
 
-      # Step 2: Build Docker images
       - name: Build service Docker images
         run: ./gradlew dockerBuildAll
 
@@ -67,9 +65,11 @@ jobs:
           ./gradlew :rococo-tests:build -x test
           docker build -f rococo-tests/Dockerfile -t rococo-tests:latest .
 
-      # Step 3: Start infra + services and run tests
       - name: Wait for Selenoid Chrome image
         run: while [ ! -f /tmp/chrome-ready ]; do sleep 1; done
+
+      - name: Start services
+        run: COMPOSE_PROFILES=env,modules docker compose up -d
 
       - name: Run tests
         run: COMPOSE_PROFILES=env,modules,tests docker compose up --exit-code-from rococo-tests
@@ -79,14 +79,12 @@ jobs:
         if: always()
         run: COMPOSE_PROFILES=env,modules,tests docker compose down
 
-      # Step 4: Generate Allure report
       - name: Generate Allure report
         if: always()
         run: |
           npm install -g allure-commandline
           allure generate --single-file allure-results -o allure-report --clean
 
-      # Step 5: Upload report artifact
       - name: Upload Allure report
         if: always()
         id: upload-report
@@ -96,7 +94,6 @@ jobs:
           path: allure-report/
           retention-days: 14
 
-      # Step 6: Publish test results
       - name: Publish test results
         if: always()
         uses: actions/github-script@v7
