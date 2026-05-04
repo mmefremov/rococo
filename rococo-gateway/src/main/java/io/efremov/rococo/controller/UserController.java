@@ -6,7 +6,7 @@ import io.efremov.rococo.service.GrpcUserdataClient;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
-import org.springframework.security.oauth2.jwt.Jwt;
+import org.springframework.security.oauth2.jwt.JwtClaimAccessor;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PatchMapping;
 import org.springframework.web.bind.annotation.RequestBody;
@@ -22,14 +22,14 @@ public class UserController {
   private final GrpcUserdataClient userdataClient;
 
   @GetMapping
-  public UserInfoResponse getUser(@AuthenticationPrincipal Jwt jwt) {
+  public UserInfoResponse getUser(@AuthenticationPrincipal JwtClaimAccessor jwt) {
     String username = jwt.getSubject();
     log.info("GET /api/user for username={}", username);
     return userdataClient.getUser(username);
   }
 
   @PatchMapping
-  public UserInfoResponse updateUser(@AuthenticationPrincipal Jwt jwt,
+  public UserInfoResponse updateUser(@AuthenticationPrincipal JwtClaimAccessor jwt,
       @RequestBody UpdateUserInfoRequest request) {
     String username = jwt.getSubject();
     log.info("PATCH /api/user for username={}", username);

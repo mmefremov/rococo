@@ -56,7 +56,8 @@ public class MuseumService {
   @Transactional
   public @NonNull MuseumEntity update(@NonNull UUID id, @NonNull String title,
       @NonNull String description, @NonNull String photoBase64, @NonNull String city, @NonNull UUID countryId) {
-    MuseumEntity entity = findById(id);
+    MuseumEntity entity = museumRepository.findById(id)
+        .orElseThrow(() -> new MuseumNotFoundException(id));
     validateMuseumFields(title, description, photoBase64, city, countryId);
     if (museumRepository.existsByTitleIgnoreCaseAndCityIgnoreCaseAndIdNot(title, city, id)) {
       log.warn("Museum with title '{}' in city '{}' already exists", title, city);

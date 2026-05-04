@@ -29,6 +29,7 @@ import org.springframework.data.domain.Sort;
 @RequiredArgsConstructor
 public class GrpcPaintingService extends PaintingServiceGrpc.PaintingServiceImplBase {
 
+  public static final String INTERNAL_SERVER_ERROR = "Internal server error";
   private final PaintingService paintingService;
 
   @Override
@@ -44,7 +45,7 @@ public class GrpcPaintingService extends PaintingServiceGrpc.PaintingServiceImpl
       responseObserver.onError(Status.INVALID_ARGUMENT.withDescription(e.getMessage()).asRuntimeException());
     } catch (Exception e) {
       log.error("Unexpected error in getAllPaintings", e);
-      responseObserver.onError(Status.INTERNAL.withDescription("Internal server error").asRuntimeException());
+      responseObserver.onError(Status.INTERNAL.withDescription(INTERNAL_SERVER_ERROR).asRuntimeException());
     }
   }
 
@@ -64,7 +65,7 @@ public class GrpcPaintingService extends PaintingServiceGrpc.PaintingServiceImpl
           Status.INVALID_ARGUMENT.withDescription("Invalid id: " + request.getId()).asRuntimeException());
     } catch (Exception e) {
       log.error("Unexpected error in getPaintingById for id: {}", request.getId(), e);
-      responseObserver.onError(Status.INTERNAL.withDescription("Internal server error").asRuntimeException());
+      responseObserver.onError(Status.INTERNAL.withDescription(INTERNAL_SERVER_ERROR).asRuntimeException());
     }
   }
 
@@ -85,7 +86,7 @@ public class GrpcPaintingService extends PaintingServiceGrpc.PaintingServiceImpl
           Status.INVALID_ARGUMENT.withDescription("Invalid id: " + e.getMessage()).asRuntimeException());
     } catch (Exception e) {
       log.error("Unexpected error in getPaintingsByIds", e);
-      responseObserver.onError(Status.INTERNAL.withDescription("Internal server error").asRuntimeException());
+      responseObserver.onError(Status.INTERNAL.withDescription(INTERNAL_SERVER_ERROR).asRuntimeException());
     }
   }
 
@@ -103,7 +104,7 @@ public class GrpcPaintingService extends PaintingServiceGrpc.PaintingServiceImpl
       responseObserver.onError(Status.INVALID_ARGUMENT.withDescription(e.getMessage()).asRuntimeException());
     } catch (Exception e) {
       log.error("Unexpected error in getPaintingsByArtist for artistId: {}", request.getArtistId(), e);
-      responseObserver.onError(Status.INTERNAL.withDescription("Internal server error").asRuntimeException());
+      responseObserver.onError(Status.INTERNAL.withDescription(INTERNAL_SERVER_ERROR).asRuntimeException());
     }
   }
 
@@ -128,7 +129,7 @@ public class GrpcPaintingService extends PaintingServiceGrpc.PaintingServiceImpl
       responseObserver.onError(Status.INVALID_ARGUMENT.withDescription(e.getMessage()).asRuntimeException());
     } catch (Exception e) {
       log.error("Unexpected error in createPainting", e);
-      responseObserver.onError(Status.INTERNAL.withDescription("Internal server error").asRuntimeException());
+      responseObserver.onError(Status.INTERNAL.withDescription(INTERNAL_SERVER_ERROR).asRuntimeException());
     }
   }
 
@@ -157,7 +158,7 @@ public class GrpcPaintingService extends PaintingServiceGrpc.PaintingServiceImpl
       responseObserver.onError(Status.INVALID_ARGUMENT.withDescription(e.getMessage()).asRuntimeException());
     } catch (Exception e) {
       log.error("Unexpected error in updatePainting for id: {}", request.getId(), e);
-      responseObserver.onError(Status.INTERNAL.withDescription("Internal server error").asRuntimeException());
+      responseObserver.onError(Status.INTERNAL.withDescription(INTERNAL_SERVER_ERROR).asRuntimeException());
     }
   }
 

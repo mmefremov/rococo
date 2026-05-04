@@ -22,7 +22,6 @@ import io.grpc.StatusRuntimeException;
 import io.grpc.stub.StreamObserver;
 import java.util.List;
 import java.util.UUID;
-import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.ArgumentCaptor;
@@ -50,7 +49,6 @@ class GrpcMuseumServiceTest {
   private GrpcMuseumService grpcMuseumService;
 
   @Test
-  @DisplayName("getMuseumById: existing id → sends flat response with city and country_id")
   void getMuseumById_existingId_sendsResponse() {
     UUID id = UUID.randomUUID();
     UUID countryId = UUID.randomUUID();
@@ -74,7 +72,6 @@ class GrpcMuseumServiceTest {
   }
 
   @Test
-  @DisplayName("getMuseumById: invalid UUID → INVALID_ARGUMENT")
   void getMuseumById_invalidIdFormat_sendsInvalidArgumentError() {
     grpcMuseumService.getMuseumById(
         MuseumByIdRequest.newBuilder().setId("not-a-uuid").build(),
@@ -89,7 +86,6 @@ class GrpcMuseumServiceTest {
   }
 
   @Test
-  @DisplayName("getMuseumById: not found → NOT_FOUND")
   void getMuseumById_notFound_sendsNotFoundError() {
     UUID id = UUID.randomUUID();
     when(museumService.findById(id)).thenThrow(new MuseumNotFoundException(id));
@@ -107,7 +103,6 @@ class GrpcMuseumServiceTest {
   }
 
   @Test
-  @DisplayName("getMuseumsByIds: existing ids → sends batch response")
   void getMuseumsByIds_existingIds_sendsResponse() {
     UUID id1 = UUID.randomUUID();
     UUID id2 = UUID.randomUUID();
@@ -131,7 +126,6 @@ class GrpcMuseumServiceTest {
   }
 
   @Test
-  @DisplayName("getMuseumsByIds: empty request → sends empty response")
   void getMuseumsByIds_emptyRequest_sendsEmptyResponse() {
     when(museumService.findAllByIds(List.of())).thenReturn(List.of());
 
@@ -147,7 +141,6 @@ class GrpcMuseumServiceTest {
   }
 
   @Test
-  @DisplayName("getMuseumsByIds: invalid UUID → INVALID_ARGUMENT")
   void getMuseumsByIds_invalidIdFormat_sendsInvalidArgumentError() {
     grpcMuseumService.getMuseumsByIds(
         MuseumsByIdRequest.newBuilder().addId("not-a-uuid").build(),
@@ -162,7 +155,6 @@ class GrpcMuseumServiceTest {
   }
 
   @Test
-  @DisplayName("createMuseum: valid request → sends flat museum response")
   void createMuseum_validRequest_sendsCreatedMuseum() {
     UUID countryId = UUID.randomUUID();
     MuseumEntity entity = createMuseum(UUID.randomUUID(), "Louvre", "Paris", countryId);
@@ -189,7 +181,6 @@ class GrpcMuseumServiceTest {
   }
 
   @Test
-  @DisplayName("createMuseum: invalid countryId UUID → INVALID_ARGUMENT")
   void createMuseum_invalidCountryId_sendsInvalidArgumentError() {
     grpcMuseumService.createMuseum(
         CreateMuseumRequest.newBuilder()
@@ -210,7 +201,6 @@ class GrpcMuseumServiceTest {
   }
 
   @Test
-  @DisplayName("createMuseum: blank title → INVALID_ARGUMENT")
   void createMuseum_blankTitle_sendsInvalidArgumentError() {
     UUID countryId = UUID.randomUUID();
     when(museumService.create(eq(""), any(), any(), any(), any()))
@@ -236,7 +226,6 @@ class GrpcMuseumServiceTest {
   }
 
   @Test
-  @DisplayName("updateMuseum: invalid id UUID → INVALID_ARGUMENT")
   void updateMuseum_invalidIdFormat_sendsInvalidArgumentError() {
     grpcMuseumService.updateMuseum(
         UpdateMuseumRequest.newBuilder()
@@ -258,7 +247,6 @@ class GrpcMuseumServiceTest {
   }
 
   @Test
-  @DisplayName("updateMuseum: museum not found → NOT_FOUND")
   void updateMuseum_notFound_sendsNotFoundError() {
     UUID id = UUID.randomUUID();
     UUID countryId = UUID.randomUUID();
@@ -285,7 +273,6 @@ class GrpcMuseumServiceTest {
   }
 
   @Test
-  @DisplayName("getAllMuseums: returns page response")
   void getAllMuseums_returnsPageResponse() {
     UUID countryId = UUID.randomUUID();
     MuseumEntity entity = createMuseum(UUID.randomUUID(), "Hermitage", "Saint Petersburg", countryId);

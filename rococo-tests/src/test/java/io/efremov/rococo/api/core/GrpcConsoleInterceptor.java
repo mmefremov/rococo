@@ -36,18 +36,18 @@ public class GrpcConsoleInterceptor implements ClientInterceptor {
   @Step("gRPC call")
   public <ReqT, RespT> ClientCall<ReqT, RespT> interceptCall(MethodDescriptor<ReqT, RespT> methodDescriptor,
       CallOptions callOptions, Channel channel) {
-    return new ForwardingClientCall.SimpleForwardingClientCall(
+    return new ForwardingClientCall.SimpleForwardingClientCall<>(
         channel.newCall(methodDescriptor, callOptions)) {
       @Override
-      public void start(Listener responseListener, Metadata headers) {
-        ForwardingClientCallListener<Object> clientCallListener = new ForwardingClientCallListener<>() {
+      public void start(Listener<RespT> responseListener, Metadata headers) {
+        ForwardingClientCallListener<RespT> clientCallListener = new ForwardingClientCallListener<>() {
           @Override
-          protected Listener<Object> delegate() {
+          protected Listener<RespT> delegate() {
             return responseListener;
           }
 
           @Override
-          public void onMessage(Object message) {
+          public void onMessage(RespT message) {
             try {
               String printed = printer.print((MessageOrBuilder) message);
               String prettyBody = JsonUtils.writeValueAsStringWithLongFieldsTruncating(printed);
@@ -63,7 +63,7 @@ public class GrpcConsoleInterceptor implements ClientInterceptor {
       }
 
       @Override
-      public void sendMessage(Object message) {
+      public void sendMessage(ReqT message) {
         try {
           String printed = printer.print((MessageOrBuilder) message);
           String prettyBody = JsonUtils.writeValueAsStringWithLongFieldsTruncating(printed);

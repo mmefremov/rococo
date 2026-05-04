@@ -1,7 +1,7 @@
 // @ts-check
 'use strict';
 
-const fs = require('fs');
+const fs = require('node:fs');
 
 module.exports = async ({github, context, core, glob}) => {
   function parseXmlFiles(files) {
@@ -10,7 +10,7 @@ module.exports = async ({github, context, core, glob}) => {
       try {
         const content = fs.readFileSync(file, 'utf8');
         for (const match of content.matchAll(/<testsuite\b[^>]*>/g)) {
-          const attr = (name) => parseInt(
+          const attr = (name) => Number.parseInt(
               match[0].match(new RegExp(`${name}="(\\d+)"`))?.[1] ?? '0');
           tests += attr('tests');
           failures += attr('failures');

@@ -72,7 +72,8 @@ public class ArtistService {
   @Transactional
   public @NonNull ArtistEntity update(@NonNull UUID id, @NonNull String name,
       @NonNull String biography, @NonNull String photoBase64) {
-    ArtistEntity entity = findById(id);
+    ArtistEntity entity = artistRepository.findById(id)
+        .orElseThrow(() -> new ArtistNotFoundException(id));
     validateArtistFields(name, biography, photoBase64);
     if (artistRepository.existsByNameIgnoreCaseAndIdNot(name, id)) {
       log.warn("Artist with name '{}' already exists", name);

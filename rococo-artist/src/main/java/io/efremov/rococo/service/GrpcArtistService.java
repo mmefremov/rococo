@@ -27,6 +27,7 @@ import org.springframework.data.domain.Sort;
 @RequiredArgsConstructor
 public class GrpcArtistService extends ArtistServiceGrpc.ArtistServiceImplBase {
 
+  public static final String INTERNAL_SERVER_ERROR = "Internal server error";
   private final ArtistService artistService;
 
   @Override
@@ -52,7 +53,7 @@ public class GrpcArtistService extends ArtistServiceGrpc.ArtistServiceImplBase {
       responseObserver.onError(Status.INVALID_ARGUMENT.withDescription(e.getMessage()).asRuntimeException());
     } catch (Exception e) {
       log.error("Unexpected error in getAllArtists", e);
-      responseObserver.onError(Status.INTERNAL.withDescription("Internal server error").asRuntimeException());
+      responseObserver.onError(Status.INTERNAL.withDescription(INTERNAL_SERVER_ERROR).asRuntimeException());
     }
   }
 
@@ -73,7 +74,7 @@ public class GrpcArtistService extends ArtistServiceGrpc.ArtistServiceImplBase {
           Status.INVALID_ARGUMENT.withDescription("Invalid id: " + e.getMessage()).asRuntimeException());
     } catch (Exception e) {
       log.error("Unexpected error in getArtistById", e);
-      responseObserver.onError(Status.INTERNAL.withDescription("Internal server error").asRuntimeException());
+      responseObserver.onError(Status.INTERNAL.withDescription(INTERNAL_SERVER_ERROR).asRuntimeException());
     }
   }
 
@@ -93,7 +94,7 @@ public class GrpcArtistService extends ArtistServiceGrpc.ArtistServiceImplBase {
       responseObserver.onError(Status.INVALID_ARGUMENT.withDescription(e.getMessage()).asRuntimeException());
     } catch (Exception e) {
       log.error("Unexpected error in createArtist", e);
-      responseObserver.onError(Status.INTERNAL.withDescription("Internal server error").asRuntimeException());
+      responseObserver.onError(Status.INTERNAL.withDescription(INTERNAL_SERVER_ERROR).asRuntimeException());
     }
   }
 
@@ -121,7 +122,7 @@ public class GrpcArtistService extends ArtistServiceGrpc.ArtistServiceImplBase {
       responseObserver.onError(Status.INVALID_ARGUMENT.withDescription(e.getMessage()).asRuntimeException());
     } catch (Exception e) {
       log.error("Unexpected error in updateArtist for id: {}", request.getId(), e);
-      responseObserver.onError(Status.INTERNAL.withDescription("Internal server error").asRuntimeException());
+      responseObserver.onError(Status.INTERNAL.withDescription(INTERNAL_SERVER_ERROR).asRuntimeException());
     }
   }
 

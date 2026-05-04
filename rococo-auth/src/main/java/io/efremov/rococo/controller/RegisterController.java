@@ -62,7 +62,7 @@ public class RegisterController {
         addErrorToRegistrationModel(
             registrationForm,
             model,
-            "username", "Username `" + registrationForm.username() + "` already exists"
+            MODEL_USERNAME_ATTR, "Username `" + registrationForm.username() + "` already exists"
         );
       }
     } else {
@@ -78,8 +78,8 @@ public class RegisterController {
       @Nonnull String error) {
     BeanPropertyBindingResult errorResult = (BeanPropertyBindingResult) model.getAttribute(REG_MODEL_ERROR_BEAN_NAME);
     if (errorResult == null) {
-      errorResult = new BeanPropertyBindingResult(registrationForm, "registrationForm");
+      errorResult = new BeanPropertyBindingResult(registrationForm, MODEL_REG_FORM_ATTR);
     }
-    errorResult.addError(new FieldError("registrationForm", fieldName, error));
+    errorResult.addError(new FieldError(MODEL_REG_FORM_ATTR, fieldName, error));
   }
 }

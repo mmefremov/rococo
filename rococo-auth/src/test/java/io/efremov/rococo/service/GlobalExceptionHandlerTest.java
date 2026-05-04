@@ -8,7 +8,6 @@ import jakarta.servlet.RequestDispatcher;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import org.junit.jupiter.api.BeforeEach;
-import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.Mock;
@@ -43,7 +42,6 @@ class GlobalExceptionHandlerTest {
   }
 
   @Test
-  @DisplayName("Должен обрабатывать NoResourceFoundException как 404")
   void handleAnyException_noResourceFound_returns404() {
     NoResourceFoundException exception = new NoResourceFoundException(HttpMethod.GET, "/api/nonexistent");
     when(request.getRequestURI()).thenReturn("/api/nonexistent");
@@ -61,7 +59,6 @@ class GlobalExceptionHandlerTest {
   }
 
   @Test
-  @DisplayName("Должен обрабатывать общее исключение с кодом ошибки из запроса")
   void handleAnyException_withErrorCodeAttribute_usesStatusCodeFromRequest() {
     Exception exception = new RuntimeException("Test exception");
     when(request.getAttribute(RequestDispatcher.ERROR_STATUS_CODE)).thenReturn(HttpServletResponse.SC_BAD_REQUEST);
@@ -77,7 +74,6 @@ class GlobalExceptionHandlerTest {
   }
 
   @Test
-  @DisplayName("Должен обрабатывать общее исключение со статусом из response")
   void handleAnyException_withOkStatus_defaultsTo500() {
     Exception exception = new RuntimeException("Internal error");
     when(request.getAttribute(RequestDispatcher.ERROR_STATUS_CODE)).thenReturn(null);
@@ -93,7 +89,6 @@ class GlobalExceptionHandlerTest {
   }
 
   @Test
-  @DisplayName("Должен обрабатывать исключение с неизвестным статусом как 500")
   void handleAnyException_withUnknownStatus_defaultsTo500() {
     Exception exception = new RuntimeException("Unknown error");
     when(request.getAttribute(RequestDispatcher.ERROR_STATUS_CODE)).thenReturn(999);
@@ -108,7 +103,6 @@ class GlobalExceptionHandlerTest {
   }
 
   @Test
-  @DisplayName("Должен добавлять все необходимые атрибуты в модель")
   void handleAnyException_addsAllAttributesToModel() {
     Exception exception = new IllegalStateException("State error");
     when(request.getAttribute(RequestDispatcher.ERROR_STATUS_CODE)).thenReturn(HttpServletResponse.SC_CONFLICT);
@@ -125,7 +119,6 @@ class GlobalExceptionHandlerTest {
   }
 
   @Test
-  @DisplayName("Должен обрабатывать 401 Unauthorized")
   void handleAnyException_unauthorized_returns401() {
     Exception exception = new RuntimeException("Unauthorized");
     when(request.getAttribute(RequestDispatcher.ERROR_STATUS_CODE)).thenReturn(HttpServletResponse.SC_UNAUTHORIZED);
@@ -140,7 +133,6 @@ class GlobalExceptionHandlerTest {
   }
 
   @Test
-  @DisplayName("Должен обрабатывать 403 Forbidden")
   void handleAnyException_forbidden_returns403() {
     Exception exception = new RuntimeException("Forbidden");
     when(request.getAttribute(RequestDispatcher.ERROR_STATUS_CODE)).thenReturn(HttpServletResponse.SC_FORBIDDEN);

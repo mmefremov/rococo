@@ -28,6 +28,7 @@ import org.springframework.data.domain.Sort;
 @RequiredArgsConstructor
 public class GrpcMuseumService extends MuseumServiceGrpc.MuseumServiceImplBase {
 
+  public static final String INTERNAL_SERVER_ERROR = "Internal server error";
   private final MuseumService museumService;
 
   @Override
@@ -53,7 +54,7 @@ public class GrpcMuseumService extends MuseumServiceGrpc.MuseumServiceImplBase {
       responseObserver.onError(Status.INVALID_ARGUMENT.withDescription(e.getMessage()).asRuntimeException());
     } catch (Exception e) {
       log.error("Unexpected error in getAllMuseums", e);
-      responseObserver.onError(Status.INTERNAL.withDescription("Internal server error").asRuntimeException());
+      responseObserver.onError(Status.INTERNAL.withDescription(INTERNAL_SERVER_ERROR).asRuntimeException());
     }
   }
 
@@ -73,7 +74,7 @@ public class GrpcMuseumService extends MuseumServiceGrpc.MuseumServiceImplBase {
           Status.INVALID_ARGUMENT.withDescription("Invalid id: " + request.getId()).asRuntimeException());
     } catch (Exception e) {
       log.error("Unexpected error in getMuseumById for id: {}", request.getId(), e);
-      responseObserver.onError(Status.INTERNAL.withDescription("Internal server error").asRuntimeException());
+      responseObserver.onError(Status.INTERNAL.withDescription(INTERNAL_SERVER_ERROR).asRuntimeException());
     }
   }
 
@@ -94,7 +95,7 @@ public class GrpcMuseumService extends MuseumServiceGrpc.MuseumServiceImplBase {
           Status.INVALID_ARGUMENT.withDescription("Invalid id: " + e.getMessage()).asRuntimeException());
     } catch (Exception e) {
       log.error("Unexpected error in getMuseumsByIds", e);
-      responseObserver.onError(Status.INTERNAL.withDescription("Internal server error").asRuntimeException());
+      responseObserver.onError(Status.INTERNAL.withDescription(INTERNAL_SERVER_ERROR).asRuntimeException());
     }
   }
 
@@ -119,7 +120,7 @@ public class GrpcMuseumService extends MuseumServiceGrpc.MuseumServiceImplBase {
       responseObserver.onError(Status.INVALID_ARGUMENT.withDescription(e.getMessage()).asRuntimeException());
     } catch (Exception e) {
       log.error("Unexpected error in createMuseum", e);
-      responseObserver.onError(Status.INTERNAL.withDescription("Internal server error").asRuntimeException());
+      responseObserver.onError(Status.INTERNAL.withDescription(INTERNAL_SERVER_ERROR).asRuntimeException());
     }
   }
 
@@ -148,7 +149,7 @@ public class GrpcMuseumService extends MuseumServiceGrpc.MuseumServiceImplBase {
       responseObserver.onError(Status.INVALID_ARGUMENT.withDescription(e.getMessage()).asRuntimeException());
     } catch (Exception e) {
       log.error("Unexpected error in updateMuseum for id: {}", request.getId(), e);
-      responseObserver.onError(Status.INTERNAL.withDescription("Internal server error").asRuntimeException());
+      responseObserver.onError(Status.INTERNAL.withDescription(INTERNAL_SERVER_ERROR).asRuntimeException());
     }
   }
 

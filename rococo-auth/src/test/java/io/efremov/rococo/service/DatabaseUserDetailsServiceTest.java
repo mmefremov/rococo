@@ -11,7 +11,6 @@ import io.efremov.rococo.data.repository.UserRepository;
 import java.util.Optional;
 import java.util.UUID;
 import org.junit.jupiter.api.BeforeEach;
-import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.Mock;
@@ -33,7 +32,6 @@ class DatabaseUserDetailsServiceTest {
   }
 
   @Test
-  @DisplayName("Должен загружать UserDetails по имени пользователя")
   void loadUserByUsername_existingUser_returnsUserDetails() {
     UserEntity userEntity = createUserEntity("testuser", "encodedPassword", true, true, true, true);
     when(userRepository.findByUsername("testuser")).thenReturn(Optional.of(userEntity));
@@ -51,7 +49,6 @@ class DatabaseUserDetailsServiceTest {
   }
 
   @Test
-  @DisplayName("Должен выбрасывать UsernameNotFoundException, если пользователь не найден")
   void loadUserByUsername_nonExistentUser_throwsUsernameNotFoundException() {
     when(userRepository.findByUsername("nonexistent")).thenReturn(Optional.empty());
 
@@ -61,7 +58,6 @@ class DatabaseUserDetailsServiceTest {
   }
 
   @Test
-  @DisplayName("Должен маппить AuthorityEntity на SimpleGrantedAuthority")
   void loadUserByUsername_mapsAuthoritiesCorrectly() {
     UserEntity userEntity = createUserEntity("user", "pass", true, true, true, true);
     when(userRepository.findByUsername("user")).thenReturn(Optional.of(userEntity));
@@ -71,11 +67,10 @@ class DatabaseUserDetailsServiceTest {
     assertThat(userDetails.getAuthorities()).hasSize(2);
     assertThat(userDetails.getAuthorities())
         .extracting(authority -> authority.getAuthority())
-        .containsExactlyInAnyOrder(Authority.read.name(), Authority.write.name());
+        .containsExactlyInAnyOrder(Authority.READ.name(), Authority.WRITE.name());
   }
 
   @Test
-  @DisplayName("Должен возвращать корректные флаги аккаунта")
   void loadUserByUsername_returnsCorrectAccountFlags() {
     UserEntity userEntity = createUserEntity("user", "pass", false, false, true, true);
     when(userRepository.findByUsername("user")).thenReturn(Optional.of(userEntity));
@@ -100,9 +95,9 @@ class DatabaseUserDetailsServiceTest {
     userEntity.setAccountNonLocked(accountNonLocked);
 
     AuthorityEntity readAuthorityEntity = new AuthorityEntity();
-    readAuthorityEntity.setAuthority(Authority.read);
+    readAuthorityEntity.setAuthority(Authority.READ);
     AuthorityEntity writeAuthorityEntity = new AuthorityEntity();
-    writeAuthorityEntity.setAuthority(Authority.write);
+    writeAuthorityEntity.setAuthority(Authority.WRITE);
     userEntity.addAuthorities(readAuthorityEntity, writeAuthorityEntity);
 
     return userEntity;

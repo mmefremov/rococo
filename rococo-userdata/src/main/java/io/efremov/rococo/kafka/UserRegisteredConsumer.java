@@ -20,7 +20,7 @@ public class UserRegisteredConsumer {
       userService.createUserIfNotExists(username);
     } catch (IllegalArgumentException e) {
       log.warn("Skipping invalid user registration message: {}", e.getMessage());
-    } catch (Exception e) {
+    } catch (RuntimeException e) {
       log.error("Failed to process user-registered event for username: {}", username, e);
       throw e;
     }

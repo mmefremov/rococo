@@ -19,7 +19,7 @@ public class UserService {
 
   @Transactional
   public @NonNull UserEntity createUserIfNotExists(@NonNull String username) {
-    if (username == null || username.trim().isBlank()) {
+    if (username.trim().isBlank()) {
       throw new IllegalArgumentException("username: must not be blank");
     }
     if (username.length() < 3 || username.length() > 50) {
@@ -38,7 +38,8 @@ public class UserService {
   @Transactional
   public @NonNull UserEntity updateUser(@NonNull String username, @NonNull String firstName, @NonNull String lastName,
       @NonNull String avatarBase64) {
-    UserEntity user = findByUsername(username);
+    UserEntity user = userRepository.findByUserName(username)
+        .orElseThrow(() -> new UserNotFoundException(username));
     if (!firstName.isBlank() && firstName.length() > 255) {
       throw new IllegalArgumentException("firstName: must not exceed 255 characters");
     }

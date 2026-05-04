@@ -15,7 +15,6 @@ import io.efremov.rococo.data.repository.UserRepository;
 import io.efremov.rococo.kafka.UserRegisteredProducer;
 import java.util.Optional;
 import java.util.UUID;
-import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.ArgumentCaptor;
@@ -102,7 +101,6 @@ class UserServiceTest {
   }
 
   @Test
-  @DisplayName("Должен выбрасывать DataIntegrityViolationException, если пользователь уже существует")
   void registerUser_duplicateUsername_throwsDataIntegrityViolationException() {
     when(userRepository.findByUsername("existingUser")).thenReturn(Optional.of(new UserEntity()));
 
@@ -115,7 +113,6 @@ class UserServiceTest {
   }
 
   @Test
-  @DisplayName("Должен проверять существование пользователя перед регистрацией")
   void registerUser_checksIfUserExistsBeforeRegistration() {
     when(userRepository.findByUsername("newUser")).thenReturn(Optional.empty());
     when(passwordEncoder.encode(anyString())).thenReturn("encoded");
@@ -129,7 +126,6 @@ class UserServiceTest {
   }
 
   @Test
-  @DisplayName("Должен назначать Authority")
   void registerUser_assignsCorrectAuthorities() {
     when(passwordEncoder.encode(anyString())).thenReturn("encoded");
     UserEntity savedUser = new UserEntity();
@@ -143,6 +139,6 @@ class UserServiceTest {
     var authorities = captor.getValue().getAuthorities();
     assertThat(authorities).hasSize(2);
     assertThat(authorities).extracting(AuthorityEntity::getAuthority)
-        .containsExactlyInAnyOrder(Authority.read, Authority.write);
+        .containsExactlyInAnyOrder(Authority.READ, Authority.WRITE);
   }
 }

@@ -20,7 +20,7 @@ public class UserRegisteredProducer {
   public void sendUserRegisteredEvent(@NonNull String username) {
     log.info("Sending user-registered event for username: {}", username);
     CompletableFuture<SendResult<String, String>> future = kafkaTemplate.send(TOPIC, username, username);
-    future.whenComplete((result, ex) -> {
+    future.whenComplete((SendResult<String, String> result, Throwable ex) -> {
       if (ex != null) {
         log.error("Failed to send user-registered event for username: {}", username, ex);
       } else {

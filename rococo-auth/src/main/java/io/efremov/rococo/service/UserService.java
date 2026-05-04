@@ -45,9 +45,9 @@ public class UserService {
     userEntity.setPassword(passwordEncoder.encode(password));
 
     AuthorityEntity readAuthorityEntity = new AuthorityEntity();
-    readAuthorityEntity.setAuthority(Authority.read);
+    readAuthorityEntity.setAuthority(Authority.READ);
     AuthorityEntity writeAuthorityEntity = new AuthorityEntity();
-    writeAuthorityEntity.setAuthority(Authority.write);
+    writeAuthorityEntity.setAuthority(Authority.WRITE);
 
     userEntity.addAuthorities(readAuthorityEntity, writeAuthorityEntity);
     String savedUsername = userRepository.save(userEntity).getUsername();

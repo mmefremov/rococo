@@ -7,7 +7,6 @@ import static org.mockito.Mockito.when;
 import java.util.List;
 import java.util.Set;
 import org.junit.jupiter.api.BeforeEach;
-import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.junit.jupiter.MockitoExtension;
@@ -29,7 +28,6 @@ class CorsCustomizerTest {
   }
 
   @Test
-  @DisplayName("Должен возвращать корректные разрешённые origin-ы")
   void allowedOrigins_returnsFrontAndAuthUris() {
     Set<String> allowedOrigins = corsCustomizer.allowedOrigins();
 
@@ -37,7 +35,6 @@ class CorsCustomizerTest {
   }
 
   @Test
-  @DisplayName("Должен создавать CorsConfiguration с правильными настройками")
   void corsConfigurationSource_returnsCorrectConfiguration() {
     MockHttpServletRequest request = new MockHttpServletRequest();
 
@@ -51,7 +48,6 @@ class CorsCustomizerTest {
   }
 
   @Test
-  @DisplayName("Должен возвращать Customizer для CorsConfigurer")
   void customizer_returnsCorsConfigurerCustomizer() {
     var customizer = corsCustomizer.customizer();
 
@@ -59,7 +55,6 @@ class CorsCustomizerTest {
   }
 
   @Test
-  @DisplayName("Должен настраивать CORS для HttpSecurity")
   void corsCustomizer_configuresHttpSecurity() throws Exception {
     HttpSecurity httpSecurity = mock(HttpSecurity.class);
     when(httpSecurity.cors(org.mockito.ArgumentMatchers.any())).thenReturn(httpSecurity);
