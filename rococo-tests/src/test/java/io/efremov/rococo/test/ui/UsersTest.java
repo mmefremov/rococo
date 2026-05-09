@@ -82,5 +82,34 @@ class UsersTest {
         .verifyPageLoaded()
         .verifyUserIsNotLoggedIn();
   }
+
+  @Test
+  @DisplayName("Login validations")
+  void loginValidationsTest() {
+    MainPage.open()
+        .clickLoginButton()
+        .verifyPageLoaded()
+        .checkUsernameRequiredMessage()
+        .checkPasswordRequiredMessage()
+        .checkBadCredetialsError();
+  }
+
+  @Test
+  @AnyUser
+  @DisplayName("Register validations")
+  void registerValidationsTest(UserInfoResponse existingUser) {
+    MainPage.open()
+        .clickLoginButton()
+        .clickRegisterButton()
+        .verifyPageLoaded()
+        .checkUsernameRequiredMessage()
+        .checkPasswordRequiredMessage()
+        .checkPasswordSubmitRequiredMessage()
+        .checkMinAllowedLengthOfFieldsErrors()
+        .checkMaxAllowedLengthOfFieldsErrors()
+        .checkCredentialsContainWhitespaceMessage()
+        .checkPasswordsAreDifferentMessage()
+        .checkExistingUsernameMessage(existingUser);
+  }
 }
 

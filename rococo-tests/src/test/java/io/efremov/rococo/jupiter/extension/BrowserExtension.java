@@ -7,6 +7,7 @@ import com.codeborne.selenide.logevents.SelenideLogger;
 import io.qameta.allure.Allure;
 import io.qameta.allure.selenide.AllureSelenide;
 import java.io.ByteArrayInputStream;
+import java.util.Map;
 import java.util.Objects;
 import org.junit.jupiter.api.extension.AfterEachCallback;
 import org.junit.jupiter.api.extension.BeforeAllCallback;
@@ -30,11 +31,17 @@ public class BrowserExtension implements
     Configuration.browser = "chrome";
     Configuration.pageLoadStrategy = "eager";
 
+    ChromeOptions options = new ChromeOptions()
+        .addArguments("--lang=ru-RU")
+        .addArguments("--no-sandbox");
+
     if (Objects.equals(System.getProperty("test.env"), "docker")) {
       Configuration.remote = "http://selenoid:4444/wd/hub";
       Configuration.browserVersion = "147.0";
-      Configuration.browserCapabilities = new ChromeOptions().addArguments("--no-sandbox");
+      options.setCapability("selenoid:options",
+          Map.of("env", new String[]{"LANG=ru_RU.UTF-8", "LANGUAGE=ru_RU:ru", "LC_ALL=ru_RU.UTF-8"}));
     }
+    Configuration.browserCapabilities = options;
   }
 
   @Override
