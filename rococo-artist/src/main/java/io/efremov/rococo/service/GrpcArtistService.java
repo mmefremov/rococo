@@ -1,7 +1,8 @@
 package io.efremov.rococo.service;
 
+import io.efremov.rococo.common.grpc.GrpcServiceTemplate;
+import io.efremov.rococo.common.grpc.PageMetadata;
 import io.efremov.rococo.data.ArtistEntity;
-import io.efremov.rococo.common.exception.EntityNotFoundException;
 import io.efremov.rococo.grpc.ArtistByIdRequest;
 import io.efremov.rococo.grpc.ArtistPageRequest;
 import io.efremov.rococo.grpc.ArtistPageResponse;
@@ -10,14 +11,12 @@ import io.efremov.rococo.grpc.ArtistServiceGrpc;
 import io.efremov.rococo.grpc.ArtistsResponse;
 import io.efremov.rococo.grpc.CreateArtistRequest;
 import io.efremov.rococo.grpc.UpdateArtistRequest;
-import io.grpc.Status;
 import io.grpc.stub.StreamObserver;
 import java.util.List;
 import java.util.UUID;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import net.devh.boot.grpc.server.service.GrpcService;
-import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Sort;
@@ -27,103 +26,62 @@ import org.springframework.data.domain.Sort;
 @RequiredArgsConstructor
 public class GrpcArtistService extends ArtistServiceGrpc.ArtistServiceImplBase {
 
-  public static final String INTERNAL_SERVER_ERROR = "Internal server error";
   private final ArtistService artistService;
 
   @Override
   public void getAllArtists(ArtistPageRequest request, StreamObserver<ArtistPageResponse> responseObserver) {
     log.info("gRPC getAllArtists called, page={}, size={}", request.getPage(), request.getSize());
-    try {
+    GrpcServiceTemplate.unary(responseObserver, () -> {
       String name = request.hasName() ? request.getName() : null;
       Page<ArtistEntity> page = artistService.findAll(name,
           PageRequest.of(request.getPage(), request.getSize(), Sort.by("name").ascending()));
-      ArtistPageResponse response = ArtistPageResponse.newBuilder()
+      PageMetadata meta = PageMetadata.from(page);
+      return ArtistPageResponse.newBuilder()
           .addAllContent(page.getContent().stream().map(this::toResponse).toList())
-          .setTotalElements((int) page.getTotalElements())
-          .setTotalPages(page.getTotalPages())
-          .setPageNumber(page.getNumber())
-          .setPageSize(page.getSize())
-          .setLast(page.isLast())
-          .setFirst(page.isFirst())
-          .setNumberOfElements(page.getNumberOfElements())
+          .setTotalElements(meta.totalElements())
+          .setTotalPages(meta.totalPages())
+          .setPageNumber(meta.pageNumber())
+          .setPageSize(meta.pageSize())
+          .setLast(meta.last())
+          .setFirst(meta.first())
+          .setNumberOfElements(meta.numberOfElements())
           .build();
-      responseObserver.onNext(response);
-      responseObserver.onCompleted();
-    } catch (IllegalArgumentException e) {
-      responseObserver.onError(Status.INVALID_ARGUMENT.withDescription(e.getMessage()).asRuntimeException());
-    } catch (Exception e) {
-      log.error("Unexpected error in getAllArtists", e);
-      responseObserver.onError(Status.INTERNAL.withDescription(INTERNAL_SERVER_ERROR).asRuntimeException());
-    }
+    });
   }
 
   @Override
   public void getArtistById(ArtistByIdRequest request, StreamObserver<ArtistsResponse> responseObserver) {
     log.info("gRPC getArtistById called, ids count={}", request.getIdCount());
-    try {
+    GrpcServiceTemplate.unary(responseObserver, () -> {
       List<UUID> ids = request.getIdList().stream().map(UUID::fromString).toList();
       List<ArtistEntity> artists = artistService.findAllByIds(ids);
-      ArtistsResponse response = ArtistsResponse.newBuilder()
+      return ArtistsResponse.newBuilder()
           .addAllArtists(artists.stream().map(this::toResponse).toList())
           .build();
-      responseObserver.onNext(response);
-      responseObserver.onCompleted();
-    } catch (IllegalArgumentException e) {
-      log.warn("Invalid artist id in getArtistById: {}", e.getMessage());
-      responseObserver.onError(
-          Status.INVALID_ARGUMENT.withDescription("Invalid id: " + e.getMessage()).asRuntimeException());
-    } catch (Exception e) {
-      log.error("Unexpected error in getArtistById", e);
-      responseObserver.onError(Status.INTERNAL.withDescription(INTERNAL_SERVER_ERROR).asRuntimeException());
-    }
+    });
   }
 
   @Override
   public void createArtist(CreateArtistRequest request, StreamObserver<ArtistResponse> responseObserver) {
     log.info("gRPC createArtist called, name={}", request.getName());
-    try {
+    GrpcServiceTemplate.unary(responseObserver, () -> {
       ArtistEntity artist = artistService.create(request.getName(), request.getBiography(), request.getPhoto());
-      responseObserver.onNext(toResponse(artist));
-      responseObserver.onCompleted();
-    } catch (DataIntegrityViolationException e) {
-      log.warn("Artist already exists: {}", request.getName());
-      responseObserver.onError(
-          Status.ALREADY_EXISTS.withDescription("Artist name already taken: " + request.getName()).asRuntimeException());
-    } catch (IllegalArgumentException e) {
-      log.warn("Invalid argument in artist operation: {}", e.getMessage());
-      responseObserver.onError(Status.INVALID_ARGUMENT.withDescription(e.getMessage()).asRuntimeException());
-    } catch (Exception e) {
-      log.error("Unexpected error in createArtist", e);
-      responseObserver.onError(Status.INTERNAL.withDescription(INTERNAL_SERVER_ERROR).asRuntimeException());
-    }
+      return toResponse(artist);
+    });
   }
 
   @Override
   public void updateArtist(UpdateArtistRequest request, StreamObserver<ArtistResponse> responseObserver) {
     log.info("gRPC updateArtist called, id={}", request.getId());
-    try {
+    GrpcServiceTemplate.unary(responseObserver, () -> {
       ArtistEntity artist = artistService.update(
           UUID.fromString(request.getId()),
           request.getName(),
           request.getBiography(),
           request.getPhoto()
       );
-      responseObserver.onNext(toResponse(artist));
-      responseObserver.onCompleted();
-    } catch (EntityNotFoundException e) {
-      log.warn("Artist not found for update: {}", request.getId());
-      responseObserver.onError(Status.NOT_FOUND.withDescription(e.getMessage()).asRuntimeException());
-    } catch (DataIntegrityViolationException e) {
-      log.warn("Duplicate artist name on update: {}", request.getName());
-      responseObserver.onError(Status.ALREADY_EXISTS.withDescription("Artist name already taken: " + request.getName())
-          .asRuntimeException());
-    } catch (IllegalArgumentException e) {
-      log.warn("Invalid argument in updateArtist: {}", e.getMessage());
-      responseObserver.onError(Status.INVALID_ARGUMENT.withDescription(e.getMessage()).asRuntimeException());
-    } catch (Exception e) {
-      log.error("Unexpected error in updateArtist for id: {}", request.getId(), e);
-      responseObserver.onError(Status.INTERNAL.withDescription(INTERNAL_SERVER_ERROR).asRuntimeException());
-    }
+      return toResponse(artist);
+    });
   }
 
   private ArtistResponse toResponse(ArtistEntity artist) {

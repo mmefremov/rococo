@@ -1,7 +1,8 @@
 package io.efremov.rococo.service;
 
+import io.efremov.rococo.common.grpc.GrpcServiceTemplate;
+import io.efremov.rococo.common.grpc.PageMetadata;
 import io.efremov.rococo.data.MuseumEntity;
-import io.efremov.rococo.common.exception.EntityNotFoundException;
 import io.efremov.rococo.grpc.CreateMuseumRequest;
 import io.efremov.rococo.grpc.MuseumByIdRequest;
 import io.efremov.rococo.grpc.MuseumPageRequest;
@@ -11,14 +12,12 @@ import io.efremov.rococo.grpc.MuseumServiceGrpc;
 import io.efremov.rococo.grpc.MuseumsByIdRequest;
 import io.efremov.rococo.grpc.MuseumsResponse;
 import io.efremov.rococo.grpc.UpdateMuseumRequest;
-import io.grpc.Status;
 import io.grpc.stub.StreamObserver;
 import java.util.List;
 import java.util.UUID;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import net.devh.boot.grpc.server.service.GrpcService;
-import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Sort;
@@ -28,129 +27,75 @@ import org.springframework.data.domain.Sort;
 @RequiredArgsConstructor
 public class GrpcMuseumService extends MuseumServiceGrpc.MuseumServiceImplBase {
 
-  public static final String INTERNAL_SERVER_ERROR = "Internal server error";
   private final MuseumService museumService;
 
   @Override
   public void getAllMuseums(MuseumPageRequest request, StreamObserver<MuseumPageResponse> responseObserver) {
     log.info("gRPC getAllMuseums called, page={}, size={}", request.getPage(), request.getSize());
-    try {
+    GrpcServiceTemplate.unary(responseObserver, () -> {
       String title = request.hasTitle() ? request.getTitle() : null;
       Page<MuseumEntity> page = museumService.findAll(title,
           PageRequest.of(request.getPage(), request.getSize(), Sort.by("title").ascending()));
-      MuseumPageResponse response = MuseumPageResponse.newBuilder()
+      PageMetadata meta = PageMetadata.from(page);
+      return MuseumPageResponse.newBuilder()
           .addAllContent(page.getContent().stream().map(this::toResponse).toList())
-          .setTotalElements((int) page.getTotalElements())
-          .setTotalPages(page.getTotalPages())
-          .setPageNumber(page.getNumber())
-          .setPageSize(page.getSize())
-          .setLast(page.isLast())
-          .setFirst(page.isFirst())
-          .setNumberOfElements(page.getNumberOfElements())
+          .setTotalElements(meta.totalElements())
+          .setTotalPages(meta.totalPages())
+          .setPageNumber(meta.pageNumber())
+          .setPageSize(meta.pageSize())
+          .setLast(meta.last())
+          .setFirst(meta.first())
+          .setNumberOfElements(meta.numberOfElements())
           .build();
-      responseObserver.onNext(response);
-      responseObserver.onCompleted();
-    } catch (IllegalArgumentException e) {
-      responseObserver.onError(Status.INVALID_ARGUMENT.withDescription(e.getMessage()).asRuntimeException());
-    } catch (Exception e) {
-      log.error("Unexpected error in getAllMuseums", e);
-      responseObserver.onError(Status.INTERNAL.withDescription(INTERNAL_SERVER_ERROR).asRuntimeException());
-    }
+    });
   }
 
   @Override
   public void getMuseumById(MuseumByIdRequest request, StreamObserver<MuseumResponse> responseObserver) {
     log.info("gRPC getMuseumById called, id={}", request.getId());
-    try {
+    GrpcServiceTemplate.unary(responseObserver, () -> {
       MuseumEntity museum = museumService.findById(UUID.fromString(request.getId()));
-      responseObserver.onNext(toResponse(museum));
-      responseObserver.onCompleted();
-    } catch (EntityNotFoundException e) {
-      log.warn("Museum not found: {}", request.getId());
-      responseObserver.onError(Status.NOT_FOUND.withDescription(e.getMessage()).asRuntimeException());
-    } catch (IllegalArgumentException e) {
-      log.warn("Invalid museum id: {}", request.getId());
-      responseObserver.onError(
-          Status.INVALID_ARGUMENT.withDescription("Invalid id: " + request.getId()).asRuntimeException());
-    } catch (Exception e) {
-      log.error("Unexpected error in getMuseumById for id: {}", request.getId(), e);
-      responseObserver.onError(Status.INTERNAL.withDescription(INTERNAL_SERVER_ERROR).asRuntimeException());
-    }
+      return toResponse(museum);
+    });
   }
 
   @Override
   public void getMuseumsByIds(MuseumsByIdRequest request, StreamObserver<MuseumsResponse> responseObserver) {
     log.info("gRPC getMuseumsByIds called, count={}", request.getIdCount());
-    try {
+    GrpcServiceTemplate.unary(responseObserver, () -> {
       List<UUID> ids = request.getIdList().stream().map(UUID::fromString).toList();
       List<MuseumEntity> museums = museumService.findAllByIds(ids);
-      MuseumsResponse response = MuseumsResponse.newBuilder()
+      return MuseumsResponse.newBuilder()
           .addAllMuseums(museums.stream().map(this::toResponse).toList())
           .build();
-      responseObserver.onNext(response);
-      responseObserver.onCompleted();
-    } catch (IllegalArgumentException e) {
-      log.warn("Invalid museum id in getMuseumsByIds: {}", e.getMessage());
-      responseObserver.onError(
-          Status.INVALID_ARGUMENT.withDescription("Invalid id: " + e.getMessage()).asRuntimeException());
-    } catch (Exception e) {
-      log.error("Unexpected error in getMuseumsByIds", e);
-      responseObserver.onError(Status.INTERNAL.withDescription(INTERNAL_SERVER_ERROR).asRuntimeException());
-    }
+    });
   }
 
   @Override
   public void createMuseum(CreateMuseumRequest request, StreamObserver<MuseumResponse> responseObserver) {
     log.info("gRPC createMuseum called, title={}", request.getTitle());
-    try {
+    GrpcServiceTemplate.unary(responseObserver, () -> {
       UUID countryId = UUID.fromString(request.getCountryId());
       MuseumEntity museum = museumService.create(
           request.getTitle(), request.getDescription(), request.getPhoto(),
           request.getCity(), countryId
       );
-      responseObserver.onNext(toResponse(museum));
-      responseObserver.onCompleted();
-    } catch (DataIntegrityViolationException e) {
-      log.warn("Museum already exists: {}", request.getTitle());
-      responseObserver.onError(
-          Status.ALREADY_EXISTS.withDescription("Museum title already taken: " + request.getTitle())
-              .asRuntimeException());
-    } catch (IllegalArgumentException e) {
-      log.warn("Invalid argument in createMuseum: {}", e.getMessage());
-      responseObserver.onError(Status.INVALID_ARGUMENT.withDescription(e.getMessage()).asRuntimeException());
-    } catch (Exception e) {
-      log.error("Unexpected error in createMuseum", e);
-      responseObserver.onError(Status.INTERNAL.withDescription(INTERNAL_SERVER_ERROR).asRuntimeException());
-    }
+      return toResponse(museum);
+    });
   }
 
   @Override
   public void updateMuseum(UpdateMuseumRequest request, StreamObserver<MuseumResponse> responseObserver) {
     log.info("gRPC updateMuseum called, id={}", request.getId());
-    try {
+    GrpcServiceTemplate.unary(responseObserver, () -> {
       UUID id = UUID.fromString(request.getId());
       UUID countryId = UUID.fromString(request.getCountryId());
       MuseumEntity museum = museumService.update(
           id, request.getTitle(), request.getDescription(),
           request.getPhoto(), request.getCity(), countryId
       );
-      responseObserver.onNext(toResponse(museum));
-      responseObserver.onCompleted();
-    } catch (EntityNotFoundException e) {
-      log.warn("Museum not found for update: {}", request.getId());
-      responseObserver.onError(Status.NOT_FOUND.withDescription(e.getMessage()).asRuntimeException());
-    } catch (DataIntegrityViolationException e) {
-      log.warn("Duplicate museum title on update: {}", request.getTitle());
-      responseObserver.onError(
-          Status.ALREADY_EXISTS.withDescription("Museum title already taken: " + request.getTitle())
-              .asRuntimeException());
-    } catch (IllegalArgumentException e) {
-      log.warn("Invalid argument in updateMuseum: {}", e.getMessage());
-      responseObserver.onError(Status.INVALID_ARGUMENT.withDescription(e.getMessage()).asRuntimeException());
-    } catch (Exception e) {
-      log.error("Unexpected error in updateMuseum for id: {}", request.getId(), e);
-      responseObserver.onError(Status.INTERNAL.withDescription(INTERNAL_SERVER_ERROR).asRuntimeException());
-    }
+      return toResponse(museum);
+    });
   }
 
   private MuseumResponse toResponse(MuseumEntity museum) {
