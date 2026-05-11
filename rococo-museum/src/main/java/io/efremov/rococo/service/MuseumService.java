@@ -40,8 +40,7 @@ public class MuseumService {
     validateMuseumFields(title, description, photoBase64, city, countryId);
     if (museumRepository.existsByTitleIgnoreCaseAndCityIgnoreCase(title, city)) {
       log.warn("Museum with title '{}' in city '{}' already exists", title, city);
-      throw new DataIntegrityViolationException(
-          "Museum with title '" + title + "' in city '" + city + "' already exists");
+      throw new DataIntegrityViolationException("Museum title already taken: " + title);
     }
     log.info("Creating museum: {}", title);
     MuseumEntity entity = new MuseumEntity();
@@ -61,8 +60,7 @@ public class MuseumService {
     validateMuseumFields(title, description, photoBase64, city, countryId);
     if (museumRepository.existsByTitleIgnoreCaseAndCityIgnoreCaseAndIdNot(title, city, id)) {
       log.warn("Museum with title '{}' in city '{}' already exists", title, city);
-      throw new DataIntegrityViolationException(
-          "Museum with title '" + title + "' in city '" + city + "' already exists");
+      throw new DataIntegrityViolationException("Museum title already taken: " + title);
     }
     log.info("Updating museum id: {}", id);
     entity.setTitle(title);

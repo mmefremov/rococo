@@ -108,8 +108,7 @@ class ArtistServiceTest {
 
     assertThatThrownBy(() -> artistService.create("Monet", "Biography text", "photo"))
         .isInstanceOf(DataIntegrityViolationException.class)
-        .hasMessageContaining("already exists")
-        .hasMessageContaining("Monet");
+        .hasMessage("Artist name already taken: Monet");
   }
 
   @Test

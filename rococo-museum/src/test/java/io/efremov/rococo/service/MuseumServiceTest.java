@@ -109,9 +109,7 @@ class MuseumServiceTest {
     assertThatThrownBy(
         () -> museumService.create("Hermitage", "valid description text", "photo", "St. Petersburg", countryId))
         .isInstanceOf(DataIntegrityViolationException.class)
-        .hasMessageContaining("already exists")
-        .hasMessageContaining("Hermitage")
-        .hasMessageContaining("St. Petersburg");
+        .hasMessage("Museum title already taken: Hermitage");
   }
 
   @Test

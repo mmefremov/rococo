@@ -54,7 +54,7 @@ public class PaintingService {
     validatePaintingFields(title, description, contentBase64, artistId);
     if (paintingRepository.existsByTitleIgnoreCaseAndArtistId(title, artistId)) {
       log.warn("Painting with title '{}' for artist '{}' already exists", title, artistId);
-      throw new DataIntegrityViolationException("Painting with title '" + title + "' for artist already exists");
+      throw new DataIntegrityViolationException("Painting already exists: " + title);
     }
     log.info("Creating painting: {}", title);
     var entity = new PaintingEntity();
@@ -74,7 +74,7 @@ public class PaintingService {
     validatePaintingFields(title, description, contentBase64, artistId);
     if (paintingRepository.existsByTitleIgnoreCaseAndArtistIdAndIdNot(title, artistId, id)) {
       log.warn("Painting with title '{}' for artist '{}' already exists", title, artistId);
-      throw new DataIntegrityViolationException("Painting with title '" + title + "' for artist already exists");
+      throw new DataIntegrityViolationException("Painting already exists: " + title);
     }
     log.info("Updating painting id: {}", id);
     entity.setTitle(title);

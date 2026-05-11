@@ -138,8 +138,7 @@ class PaintingServiceTest {
 
     assertThatThrownBy(() -> paintingService.create("Mona Lisa", "valid description text", "content", artistId, null))
         .isInstanceOf(DataIntegrityViolationException.class)
-        .hasMessageContaining("already exists")
-        .hasMessageContaining("Mona Lisa");
+        .hasMessage("Painting already exists: Mona Lisa");
   }
 
   @Test

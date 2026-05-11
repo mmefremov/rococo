@@ -59,7 +59,7 @@ public class ArtistService {
     validateArtistFields(name, biography, photoBase64);
     if (artistRepository.existsByNameIgnoreCase(name)) {
       log.warn("Artist with name '{}' already exists", name);
-      throw new DataIntegrityViolationException("Artist with name '" + name + "' already exists");
+      throw new DataIntegrityViolationException("Artist name already taken: " + name);
     }
     log.info("Creating artist: {}", name);
     ArtistEntity entity = new ArtistEntity();
@@ -77,7 +77,7 @@ public class ArtistService {
     validateArtistFields(name, biography, photoBase64);
     if (artistRepository.existsByNameIgnoreCaseAndIdNot(name, id)) {
       log.warn("Artist with name '{}' already exists", name);
-      throw new DataIntegrityViolationException("Artist with name '" + name + "' already exists");
+      throw new DataIntegrityViolationException("Artist name already taken: " + name);
     }
     log.info("Updating artist id: {}", id);
     entity.setName(name);
