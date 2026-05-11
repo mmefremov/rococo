@@ -2,6 +2,7 @@ package io.efremov.rococo.service;
 
 import io.efremov.rococo.common.exception.EntityNotFoundException;
 import io.efremov.rococo.common.util.ByteStringCodec;
+import io.efremov.rococo.common.validation.FieldValidator;
 import io.efremov.rococo.data.UserEntity;
 import io.efremov.rococo.data.repository.UserRepository;
 import lombok.RequiredArgsConstructor;
@@ -46,9 +47,7 @@ public class UserService {
     if (!lastName.isBlank() && lastName.length() > 255) {
       throw new IllegalArgumentException("lastName: must not exceed 255 characters");
     }
-    if (avatarBase64 != null && avatarBase64.length() > 1_048_576) {
-      throw new IllegalArgumentException("photo: must not exceed 1 MB");
-    }
+    FieldValidator.requireMaxByteSize(avatarBase64, "photo", 1_048_576);
     log.info("Updating user profile for: {}", username);
     if (!firstName.isBlank()) {
       user.setFirstName(firstName);
