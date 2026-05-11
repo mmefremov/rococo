@@ -110,7 +110,7 @@ class GrpcPaintingServiceTest {
   @Test
   void getPaintingById_notFound_sendsNotFoundError() {
     UUID id = UUID.randomUUID();
-    when(paintingService.findById(id)).thenThrow(new EntityNotFoundException("Painting",id));
+    when(paintingService.findById(id)).thenThrow(new EntityNotFoundException("Painting", id));
 
     grpcPaintingService.getPaintingById(
         PaintingByIdRequest.newBuilder().setId(id.toString()).build(),
@@ -365,7 +365,7 @@ class GrpcPaintingServiceTest {
     UUID id = UUID.randomUUID();
     UUID artistId = UUID.randomUUID();
     when(paintingService.update(eq(id), any(), any(), any(), eq(artistId), isNull()))
-        .thenThrow(new EntityNotFoundException("Painting",id));
+        .thenThrow(new EntityNotFoundException("Painting", id));
 
     grpcPaintingService.updatePainting(
         UpdatePaintingRequest.newBuilder()

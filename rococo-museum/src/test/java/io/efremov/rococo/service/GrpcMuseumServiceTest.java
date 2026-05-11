@@ -88,7 +88,7 @@ class GrpcMuseumServiceTest {
   @Test
   void getMuseumById_notFound_sendsNotFoundError() {
     UUID id = UUID.randomUUID();
-    when(museumService.findById(id)).thenThrow(new EntityNotFoundException("Museum",id));
+    when(museumService.findById(id)).thenThrow(new EntityNotFoundException("Museum", id));
 
     grpcMuseumService.getMuseumById(
         MuseumByIdRequest.newBuilder().setId(id.toString()).build(),
@@ -251,7 +251,7 @@ class GrpcMuseumServiceTest {
     UUID id = UUID.randomUUID();
     UUID countryId = UUID.randomUUID();
     when(museumService.update(eq(id), any(), any(), any(), any(), any()))
-        .thenThrow(new EntityNotFoundException("Museum",id));
+        .thenThrow(new EntityNotFoundException("Museum", id));
 
     grpcMuseumService.updateMuseum(
         UpdateMuseumRequest.newBuilder()

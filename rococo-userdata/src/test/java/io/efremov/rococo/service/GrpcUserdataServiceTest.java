@@ -56,7 +56,7 @@ class GrpcUserdataServiceTest {
 
   @Test
   void getUser_notFound_sendsNotFoundError() {
-    when(userService.findByUsername("unknown")).thenThrow(new EntityNotFoundException("User","unknown"));
+    when(userService.findByUsername("unknown")).thenThrow(new EntityNotFoundException("User", "unknown"));
 
     grpcUserdataService.getUser(
         UserRequest.newBuilder().setUsername("unknown").build(),
@@ -95,7 +95,7 @@ class GrpcUserdataServiceTest {
   @Test
   void updateUser_notFound_sendsNotFoundError() {
     when(userService.updateUser(eq("ghost"), any(), any(), any()))
-        .thenThrow(new EntityNotFoundException("User","ghost"));
+        .thenThrow(new EntityNotFoundException("User", "ghost"));
 
     grpcUserdataService.updateUser(
         UpdateUserRequest.newBuilder().setUsername("ghost").build(),
