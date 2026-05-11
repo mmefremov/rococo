@@ -142,11 +142,6 @@ class PaintingServiceTest {
   }
 
   @Test
-  void encodeContent_nullContent_returnsEmptyString() {
-    assertThat(PaintingService.encodeContent(null)).isEmpty();
-  }
-
-  @Test
   void create_nullTitle_throwsIllegalArgumentException() {
     assertThatThrownBy(() -> paintingService.create(null, "valid description text", "content", UUID.randomUUID(), null))
         .isInstanceOf(IllegalArgumentException.class)

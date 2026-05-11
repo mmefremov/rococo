@@ -5,6 +5,7 @@ import io.efremov.rococo.common.validation.FieldValidator;
 import io.efremov.rococo.data.ArtistEntity;
 import io.efremov.rococo.data.repository.ArtistRepository;
 import io.efremov.rococo.common.exception.EntityNotFoundException;
+import java.util.Collection;
 import java.util.List;
 import java.util.UUID;
 import lombok.RequiredArgsConstructor;
@@ -76,7 +77,7 @@ public class ArtistService {
   }
 
   @Transactional(readOnly = true)
-  public @NonNull List<ArtistEntity> findAllByIds(@NonNull List<UUID> ids) {
+  public @NonNull List<ArtistEntity> findAllByIds(@NonNull Collection<UUID> ids) {
     log.debug("Fetching artists by ids, count={}", ids.size());
     if (ids.isEmpty()) return List.of();
     return artistRepository.findAllById(ids);

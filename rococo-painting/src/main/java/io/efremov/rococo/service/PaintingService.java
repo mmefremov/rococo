@@ -5,7 +5,6 @@ import io.efremov.rococo.common.validation.FieldValidator;
 import io.efremov.rococo.data.PaintingEntity;
 import io.efremov.rococo.data.repository.PaintingRepository;
 import io.efremov.rococo.common.exception.EntityNotFoundException;
-import java.util.Base64;
 import java.util.Collection;
 import java.util.List;
 import java.util.UUID;
@@ -25,13 +24,6 @@ import org.springframework.transaction.annotation.Transactional;
 public class PaintingService {
 
   private final PaintingRepository paintingRepository;
-
-  public static @NonNull String encodeContent(byte[] content) {
-    if (content == null || content.length == 0) {
-      return "";
-    }
-    return Base64.getEncoder().encodeToString(content);
-  }
 
   @Transactional(readOnly = true)
   public @NonNull Page<PaintingEntity> findAll(@Nullable String title, @NonNull Pageable pageable) {
