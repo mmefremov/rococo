@@ -2,7 +2,7 @@ package io.efremov.rococo.service;
 
 import io.efremov.rococo.data.CountryEntity;
 import io.efremov.rococo.data.repository.CountryRepository;
-import io.efremov.rococo.exception.CountryNotFoundException;
+import io.efremov.rococo.common.exception.EntityNotFoundException;
 import java.util.Collection;
 import java.util.List;
 import java.util.UUID;
@@ -34,7 +34,7 @@ public class CountryService {
   public @NonNull CountryEntity findById(@NonNull UUID id) {
     log.debug("Fetching country by id: {}", id);
     return countryRepository.findById(id)
-        .orElseThrow(() -> new CountryNotFoundException(id));
+        .orElseThrow(() -> new EntityNotFoundException("Country", id));
   }
 
   @Transactional(readOnly = true)

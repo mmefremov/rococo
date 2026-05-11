@@ -1,7 +1,7 @@
 package io.efremov.rococo.service;
 
 import io.efremov.rococo.data.PaintingEntity;
-import io.efremov.rococo.exception.PaintingNotFoundException;
+import io.efremov.rococo.common.exception.EntityNotFoundException;
 import io.efremov.rococo.grpc.CreatePaintingRequest;
 import io.efremov.rococo.grpc.PaintingByArtistRequest;
 import io.efremov.rococo.grpc.PaintingByIdRequest;
@@ -56,7 +56,7 @@ public class GrpcPaintingService extends PaintingServiceGrpc.PaintingServiceImpl
       PaintingEntity painting = paintingService.findById(UUID.fromString(request.getId()));
       responseObserver.onNext(toResponse(painting));
       responseObserver.onCompleted();
-    } catch (PaintingNotFoundException e) {
+    } catch (EntityNotFoundException e) {
       log.warn("Painting not found: {}", request.getId());
       responseObserver.onError(Status.NOT_FOUND.withDescription(e.getMessage()).asRuntimeException());
     } catch (IllegalArgumentException e) {
@@ -146,7 +146,7 @@ public class GrpcPaintingService extends PaintingServiceGrpc.PaintingServiceImpl
       );
       responseObserver.onNext(toResponse(painting));
       responseObserver.onCompleted();
-    } catch (PaintingNotFoundException e) {
+    } catch (EntityNotFoundException e) {
       log.warn("Painting not found for update: {}", request.getId());
       responseObserver.onError(Status.NOT_FOUND.withDescription(e.getMessage()).asRuntimeException());
     } catch (DataIntegrityViolationException e) {

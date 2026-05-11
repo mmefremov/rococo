@@ -2,7 +2,7 @@ package io.efremov.rococo.service;
 
 import io.efremov.rococo.data.ArtistEntity;
 import io.efremov.rococo.data.repository.ArtistRepository;
-import io.efremov.rococo.exception.ArtistNotFoundException;
+import io.efremov.rococo.common.exception.EntityNotFoundException;
 import java.nio.charset.StandardCharsets;
 import java.util.List;
 import java.util.UUID;
@@ -73,7 +73,7 @@ public class ArtistService {
   public @NonNull ArtistEntity update(@NonNull UUID id, @NonNull String name,
       @NonNull String biography, @NonNull String photoBase64) {
     ArtistEntity entity = artistRepository.findById(id)
-        .orElseThrow(() -> new ArtistNotFoundException(id));
+        .orElseThrow(() -> new EntityNotFoundException("Artist", id));
     validateArtistFields(name, biography, photoBase64);
     if (artistRepository.existsByNameIgnoreCaseAndIdNot(name, id)) {
       log.warn("Artist with name '{}' already exists", name);
@@ -97,6 +97,6 @@ public class ArtistService {
   public @NonNull ArtistEntity findById(@NonNull UUID id) {
     log.debug("Fetching artist by id: {}", id);
     return artistRepository.findById(id)
-        .orElseThrow(() -> new ArtistNotFoundException(id));
+        .orElseThrow(() -> new EntityNotFoundException("Artist", id));
   }
 }

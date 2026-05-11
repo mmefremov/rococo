@@ -2,7 +2,7 @@ package io.efremov.rococo.service;
 
 import io.efremov.rococo.data.MuseumEntity;
 import io.efremov.rococo.data.repository.MuseumRepository;
-import io.efremov.rococo.exception.MuseumNotFoundException;
+import io.efremov.rococo.common.exception.EntityNotFoundException;
 import java.nio.charset.StandardCharsets;
 import java.util.Collection;
 import java.util.List;
@@ -57,7 +57,7 @@ public class MuseumService {
   public @NonNull MuseumEntity update(@NonNull UUID id, @NonNull String title,
       @NonNull String description, @NonNull String photoBase64, @NonNull String city, @NonNull UUID countryId) {
     MuseumEntity entity = museumRepository.findById(id)
-        .orElseThrow(() -> new MuseumNotFoundException(id));
+        .orElseThrow(() -> new EntityNotFoundException("Museum", id));
     validateMuseumFields(title, description, photoBase64, city, countryId);
     if (museumRepository.existsByTitleIgnoreCaseAndCityIgnoreCaseAndIdNot(title, city, id)) {
       log.warn("Museum with title '{}' in city '{}' already exists", title, city);
@@ -77,7 +77,7 @@ public class MuseumService {
   public @NonNull MuseumEntity findById(@NonNull UUID id) {
     log.debug("Fetching museum by id: {}", id);
     return museumRepository.findById(id)
-        .orElseThrow(() -> new MuseumNotFoundException(id));
+        .orElseThrow(() -> new EntityNotFoundException("Museum", id));
   }
 
   @Transactional(readOnly = true)

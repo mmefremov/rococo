@@ -1,7 +1,7 @@
 package io.efremov.rococo.service;
 
 import io.efremov.rococo.data.ArtistEntity;
-import io.efremov.rococo.exception.ArtistNotFoundException;
+import io.efremov.rococo.common.exception.EntityNotFoundException;
 import io.efremov.rococo.grpc.ArtistByIdRequest;
 import io.efremov.rococo.grpc.ArtistPageRequest;
 import io.efremov.rococo.grpc.ArtistPageResponse;
@@ -110,7 +110,7 @@ public class GrpcArtistService extends ArtistServiceGrpc.ArtistServiceImplBase {
       );
       responseObserver.onNext(toResponse(artist));
       responseObserver.onCompleted();
-    } catch (ArtistNotFoundException e) {
+    } catch (EntityNotFoundException e) {
       log.warn("Artist not found for update: {}", request.getId());
       responseObserver.onError(Status.NOT_FOUND.withDescription(e.getMessage()).asRuntimeException());
     } catch (DataIntegrityViolationException e) {

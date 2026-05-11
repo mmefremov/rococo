@@ -1,7 +1,7 @@
 package io.efremov.rococo.service;
 
 import io.efremov.rococo.data.UserEntity;
-import io.efremov.rococo.exception.UserNotFoundException;
+import io.efremov.rococo.common.exception.EntityNotFoundException;
 import io.efremov.rococo.grpc.UpdateUserRequest;
 import io.efremov.rococo.grpc.UserRequest;
 import io.efremov.rococo.grpc.UserResponse;
@@ -27,7 +27,7 @@ public class GrpcUserdataService extends UserdataServiceGrpc.UserdataServiceImpl
       UserEntity user = userService.findByUsername(request.getUsername());
       responseObserver.onNext(toResponse(user));
       responseObserver.onCompleted();
-    } catch (UserNotFoundException e) {
+    } catch (EntityNotFoundException e) {
       log.warn("User not found: {}", request.getUsername());
       responseObserver.onError(Status.NOT_FOUND
           .withDescription(e.getMessage())
@@ -52,7 +52,7 @@ public class GrpcUserdataService extends UserdataServiceGrpc.UserdataServiceImpl
       );
       responseObserver.onNext(toResponse(user));
       responseObserver.onCompleted();
-    } catch (UserNotFoundException e) {
+    } catch (EntityNotFoundException e) {
       log.warn("User not found for update: {}", request.getUsername());
       responseObserver.onError(Status.NOT_FOUND
           .withDescription(e.getMessage())

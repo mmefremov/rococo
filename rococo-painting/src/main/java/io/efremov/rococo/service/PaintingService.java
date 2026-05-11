@@ -2,7 +2,7 @@ package io.efremov.rococo.service;
 
 import io.efremov.rococo.data.PaintingEntity;
 import io.efremov.rococo.data.repository.PaintingRepository;
-import io.efremov.rococo.exception.PaintingNotFoundException;
+import io.efremov.rococo.common.exception.EntityNotFoundException;
 import java.nio.charset.StandardCharsets;
 import java.util.Base64;
 import java.util.Collection;
@@ -70,7 +70,7 @@ public class PaintingService {
   public @NonNull PaintingEntity update(@NonNull UUID id, @NonNull String title, @NonNull String description,
       @NonNull String contentBase64, @NonNull UUID artistId, @Nullable UUID museumId) {
     PaintingEntity entity = paintingRepository.findById(id)
-        .orElseThrow(() -> new PaintingNotFoundException(id));
+        .orElseThrow(() -> new EntityNotFoundException("Painting", id));
     validatePaintingFields(title, description, contentBase64, artistId);
     if (paintingRepository.existsByTitleIgnoreCaseAndArtistIdAndIdNot(title, artistId, id)) {
       log.warn("Painting with title '{}' for artist '{}' already exists", title, artistId);
@@ -89,7 +89,7 @@ public class PaintingService {
   public @NonNull PaintingEntity findById(@NonNull UUID id) {
     log.debug("Fetching painting by id: {}", id);
     return paintingRepository.findById(id)
-        .orElseThrow(() -> new PaintingNotFoundException(id));
+        .orElseThrow(() -> new EntityNotFoundException("Painting", id));
   }
 
   @Transactional(readOnly = true)

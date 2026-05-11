@@ -9,7 +9,7 @@ import static org.mockito.Mockito.when;
 
 import io.efremov.rococo.data.UserEntity;
 import io.efremov.rococo.data.repository.UserRepository;
-import io.efremov.rococo.exception.UserNotFoundException;
+import io.efremov.rococo.common.exception.EntityNotFoundException;
 import java.util.Optional;
 import java.util.UUID;
 import org.junit.jupiter.api.Test;
@@ -49,7 +49,7 @@ class UserServiceTest {
     when(userRepository.findByUserName("unknown")).thenReturn(Optional.empty());
 
     assertThatThrownBy(() -> userService.findByUsername("unknown"))
-        .isInstanceOf(UserNotFoundException.class)
+        .isInstanceOf(EntityNotFoundException.class)
         .hasMessageContaining("unknown");
   }
 
@@ -109,7 +109,7 @@ class UserServiceTest {
     when(userRepository.findByUserName("  ")).thenReturn(Optional.empty());
 
     assertThatThrownBy(() -> userService.updateUser("  ", "", "", ""))
-        .isInstanceOf(UserNotFoundException.class);
+        .isInstanceOf(EntityNotFoundException.class);
   }
 
   @Test
@@ -118,7 +118,7 @@ class UserServiceTest {
     when(userRepository.findByUserName(longUsername)).thenReturn(Optional.empty());
 
     assertThatThrownBy(() -> userService.updateUser(longUsername, "", "", ""))
-        .isInstanceOf(UserNotFoundException.class);
+        .isInstanceOf(EntityNotFoundException.class);
   }
 
   @Test

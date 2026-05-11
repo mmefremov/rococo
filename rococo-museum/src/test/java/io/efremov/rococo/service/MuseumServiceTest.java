@@ -9,7 +9,7 @@ import static org.mockito.Mockito.when;
 
 import io.efremov.rococo.data.MuseumEntity;
 import io.efremov.rococo.data.repository.MuseumRepository;
-import io.efremov.rococo.exception.MuseumNotFoundException;
+import io.efremov.rococo.common.exception.EntityNotFoundException;
 import java.util.Collection;
 import java.util.List;
 import java.util.Optional;
@@ -83,7 +83,7 @@ class MuseumServiceTest {
     when(museumRepository.findById(id)).thenReturn(Optional.empty());
 
     assertThatThrownBy(() -> museumService.findById(id))
-        .isInstanceOf(MuseumNotFoundException.class)
+        .isInstanceOf(EntityNotFoundException.class)
         .hasMessageContaining(id.toString());
   }
 

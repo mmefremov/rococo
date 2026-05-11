@@ -9,7 +9,7 @@ import static org.mockito.Mockito.when;
 
 import io.efremov.rococo.data.PaintingEntity;
 import io.efremov.rococo.data.repository.PaintingRepository;
-import io.efremov.rococo.exception.PaintingNotFoundException;
+import io.efremov.rococo.common.exception.EntityNotFoundException;
 import java.util.Collection;
 import java.util.List;
 import java.util.Optional;
@@ -83,7 +83,7 @@ class PaintingServiceTest {
     when(paintingRepository.findById(id)).thenReturn(Optional.empty());
 
     assertThatThrownBy(() -> paintingService.findById(id))
-        .isInstanceOf(PaintingNotFoundException.class)
+        .isInstanceOf(EntityNotFoundException.class)
         .hasMessageContaining(id.toString());
   }
 

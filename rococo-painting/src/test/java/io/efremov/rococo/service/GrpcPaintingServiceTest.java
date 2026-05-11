@@ -9,7 +9,7 @@ import static org.mockito.Mockito.verifyNoMoreInteractions;
 import static org.mockito.Mockito.when;
 
 import io.efremov.rococo.data.PaintingEntity;
-import io.efremov.rococo.exception.PaintingNotFoundException;
+import io.efremov.rococo.common.exception.EntityNotFoundException;
 import io.efremov.rococo.grpc.CreatePaintingRequest;
 import io.efremov.rococo.grpc.PaintingByArtistRequest;
 import io.efremov.rococo.grpc.PaintingByIdRequest;
@@ -110,7 +110,7 @@ class GrpcPaintingServiceTest {
   @Test
   void getPaintingById_notFound_sendsNotFoundError() {
     UUID id = UUID.randomUUID();
-    when(paintingService.findById(id)).thenThrow(new PaintingNotFoundException(id));
+    when(paintingService.findById(id)).thenThrow(new EntityNotFoundException("Painting",id));
 
     grpcPaintingService.getPaintingById(
         PaintingByIdRequest.newBuilder().setId(id.toString()).build(),
@@ -365,7 +365,7 @@ class GrpcPaintingServiceTest {
     UUID id = UUID.randomUUID();
     UUID artistId = UUID.randomUUID();
     when(paintingService.update(eq(id), any(), any(), any(), eq(artistId), isNull()))
-        .thenThrow(new PaintingNotFoundException(id));
+        .thenThrow(new EntityNotFoundException("Painting",id));
 
     grpcPaintingService.updatePainting(
         UpdatePaintingRequest.newBuilder()

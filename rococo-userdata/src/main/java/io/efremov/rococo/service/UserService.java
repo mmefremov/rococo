@@ -2,7 +2,7 @@ package io.efremov.rococo.service;
 
 import io.efremov.rococo.data.UserEntity;
 import io.efremov.rococo.data.repository.UserRepository;
-import io.efremov.rococo.exception.UserNotFoundException;
+import io.efremov.rococo.common.exception.EntityNotFoundException;
 import java.nio.charset.StandardCharsets;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -39,7 +39,7 @@ public class UserService {
   public @NonNull UserEntity updateUser(@NonNull String username, @NonNull String firstName, @NonNull String lastName,
       @NonNull String avatarBase64) {
     UserEntity user = userRepository.findByUserName(username)
-        .orElseThrow(() -> new UserNotFoundException(username));
+        .orElseThrow(() -> new EntityNotFoundException("User", username));
     if (!firstName.isBlank() && firstName.length() > 255) {
       throw new IllegalArgumentException("firstName: must not exceed 255 characters");
     }
@@ -66,6 +66,6 @@ public class UserService {
   public @NonNull UserEntity findByUsername(@NonNull String username) {
     log.debug("Looking up user by username: {}", username);
     return userRepository.findByUserName(username)
-        .orElseThrow(() -> new UserNotFoundException(username));
+        .orElseThrow(() -> new EntityNotFoundException("User", username));
   }
 }

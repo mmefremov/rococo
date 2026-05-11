@@ -7,7 +7,7 @@ import static org.mockito.Mockito.when;
 
 import io.efremov.rococo.data.CountryEntity;
 import io.efremov.rococo.data.repository.CountryRepository;
-import io.efremov.rococo.exception.CountryNotFoundException;
+import io.efremov.rococo.common.exception.EntityNotFoundException;
 import java.util.Collection;
 import java.util.List;
 import java.util.Optional;
@@ -68,7 +68,7 @@ class CountryServiceTest {
     when(countryRepository.findById(id)).thenReturn(Optional.empty());
 
     assertThatThrownBy(() -> countryService.findById(id))
-        .isInstanceOf(CountryNotFoundException.class)
+        .isInstanceOf(EntityNotFoundException.class)
         .hasMessageContaining(id.toString());
   }
 

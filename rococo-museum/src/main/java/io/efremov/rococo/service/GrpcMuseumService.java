@@ -1,7 +1,7 @@
 package io.efremov.rococo.service;
 
 import io.efremov.rococo.data.MuseumEntity;
-import io.efremov.rococo.exception.MuseumNotFoundException;
+import io.efremov.rococo.common.exception.EntityNotFoundException;
 import io.efremov.rococo.grpc.CreateMuseumRequest;
 import io.efremov.rococo.grpc.MuseumByIdRequest;
 import io.efremov.rococo.grpc.MuseumPageRequest;
@@ -65,7 +65,7 @@ public class GrpcMuseumService extends MuseumServiceGrpc.MuseumServiceImplBase {
       MuseumEntity museum = museumService.findById(UUID.fromString(request.getId()));
       responseObserver.onNext(toResponse(museum));
       responseObserver.onCompleted();
-    } catch (MuseumNotFoundException e) {
+    } catch (EntityNotFoundException e) {
       log.warn("Museum not found: {}", request.getId());
       responseObserver.onError(Status.NOT_FOUND.withDescription(e.getMessage()).asRuntimeException());
     } catch (IllegalArgumentException e) {
@@ -136,7 +136,7 @@ public class GrpcMuseumService extends MuseumServiceGrpc.MuseumServiceImplBase {
       );
       responseObserver.onNext(toResponse(museum));
       responseObserver.onCompleted();
-    } catch (MuseumNotFoundException e) {
+    } catch (EntityNotFoundException e) {
       log.warn("Museum not found for update: {}", request.getId());
       responseObserver.onError(Status.NOT_FOUND.withDescription(e.getMessage()).asRuntimeException());
     } catch (DataIntegrityViolationException e) {

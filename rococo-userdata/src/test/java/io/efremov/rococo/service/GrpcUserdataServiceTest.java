@@ -8,7 +8,7 @@ import static org.mockito.Mockito.verifyNoMoreInteractions;
 import static org.mockito.Mockito.when;
 
 import io.efremov.rococo.data.UserEntity;
-import io.efremov.rococo.exception.UserNotFoundException;
+import io.efremov.rococo.common.exception.EntityNotFoundException;
 import io.efremov.rococo.grpc.UpdateUserRequest;
 import io.efremov.rococo.grpc.UserRequest;
 import io.efremov.rococo.grpc.UserResponse;
@@ -56,7 +56,7 @@ class GrpcUserdataServiceTest {
 
   @Test
   void getUser_notFound_sendsNotFoundError() {
-    when(userService.findByUsername("unknown")).thenThrow(new UserNotFoundException("unknown"));
+    when(userService.findByUsername("unknown")).thenThrow(new EntityNotFoundException("User","unknown"));
 
     grpcUserdataService.getUser(
         UserRequest.newBuilder().setUsername("unknown").build(),
@@ -95,7 +95,7 @@ class GrpcUserdataServiceTest {
   @Test
   void updateUser_notFound_sendsNotFoundError() {
     when(userService.updateUser(eq("ghost"), any(), any(), any()))
-        .thenThrow(new UserNotFoundException("ghost"));
+        .thenThrow(new EntityNotFoundException("User","ghost"));
 
     grpcUserdataService.updateUser(
         UpdateUserRequest.newBuilder().setUsername("ghost").build(),

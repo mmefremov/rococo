@@ -10,7 +10,7 @@ import static org.mockito.Mockito.when;
 
 import io.efremov.rococo.data.ArtistEntity;
 import io.efremov.rococo.data.repository.ArtistRepository;
-import io.efremov.rococo.exception.ArtistNotFoundException;
+import io.efremov.rococo.common.exception.EntityNotFoundException;
 import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
@@ -86,7 +86,7 @@ class ArtistServiceTest {
     when(artistRepository.findById(id)).thenReturn(Optional.empty());
 
     assertThatThrownBy(() -> artistService.findById(id))
-        .isInstanceOf(ArtistNotFoundException.class)
+        .isInstanceOf(EntityNotFoundException.class)
         .hasMessageContaining(id.toString());
   }
 
@@ -135,7 +135,7 @@ class ArtistServiceTest {
     when(artistRepository.findById(id)).thenReturn(Optional.empty());
 
     assertThatThrownBy(() -> artistService.update(id, "Name", "Bio", "photo"))
-        .isInstanceOf(ArtistNotFoundException.class);
+        .isInstanceOf(EntityNotFoundException.class);
   }
 
   @Test

@@ -8,7 +8,7 @@ import static org.mockito.Mockito.verifyNoMoreInteractions;
 import static org.mockito.Mockito.when;
 
 import io.efremov.rococo.data.MuseumEntity;
-import io.efremov.rococo.exception.MuseumNotFoundException;
+import io.efremov.rococo.common.exception.EntityNotFoundException;
 import io.efremov.rococo.grpc.CreateMuseumRequest;
 import io.efremov.rococo.grpc.MuseumByIdRequest;
 import io.efremov.rococo.grpc.MuseumPageRequest;
@@ -88,7 +88,7 @@ class GrpcMuseumServiceTest {
   @Test
   void getMuseumById_notFound_sendsNotFoundError() {
     UUID id = UUID.randomUUID();
-    when(museumService.findById(id)).thenThrow(new MuseumNotFoundException(id));
+    when(museumService.findById(id)).thenThrow(new EntityNotFoundException("Museum",id));
 
     grpcMuseumService.getMuseumById(
         MuseumByIdRequest.newBuilder().setId(id.toString()).build(),
@@ -251,7 +251,7 @@ class GrpcMuseumServiceTest {
     UUID id = UUID.randomUUID();
     UUID countryId = UUID.randomUUID();
     when(museumService.update(eq(id), any(), any(), any(), any(), any()))
-        .thenThrow(new MuseumNotFoundException(id));
+        .thenThrow(new EntityNotFoundException("Museum",id));
 
     grpcMuseumService.updateMuseum(
         UpdateMuseumRequest.newBuilder()
