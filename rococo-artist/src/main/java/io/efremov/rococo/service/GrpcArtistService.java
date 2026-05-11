@@ -88,7 +88,7 @@ public class GrpcArtistService extends ArtistServiceGrpc.ArtistServiceImplBase {
     } catch (DataIntegrityViolationException e) {
       log.warn("Artist already exists: {}", request.getName());
       responseObserver.onError(
-          Status.ALREADY_EXISTS.withDescription("Artist already exists: " + request.getName()).asRuntimeException());
+          Status.ALREADY_EXISTS.withDescription("Artist name already taken: " + request.getName()).asRuntimeException());
     } catch (IllegalArgumentException e) {
       log.warn("Invalid argument in artist operation: {}", e.getMessage());
       responseObserver.onError(Status.INVALID_ARGUMENT.withDescription(e.getMessage()).asRuntimeException());
