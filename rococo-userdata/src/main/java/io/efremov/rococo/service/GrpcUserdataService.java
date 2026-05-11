@@ -1,6 +1,7 @@
 package io.efremov.rococo.service;
 
 import io.efremov.rococo.common.grpc.GrpcServiceTemplate;
+import io.efremov.rococo.common.util.ByteStringCodec;
 import io.efremov.rococo.data.UserEntity;
 import io.efremov.rococo.grpc.UpdateUserRequest;
 import io.efremov.rococo.grpc.UserRequest;
@@ -48,7 +49,7 @@ public class GrpcUserdataService extends UserdataServiceGrpc.UserdataServiceImpl
         .setUsername(user.getUserName())
         .setFirstname(Objects.requireNonNullElse(user.getFirstName(), ""))
         .setLastname(Objects.requireNonNullElse(user.getLastName(), ""))
-        .setAvatar(user.getAvatar() != null ? new String(user.getAvatar()) : "")
+        .setAvatar(user.getAvatar() != null ? ByteStringCodec.decode(user.getAvatar()) : "")
         .build();
   }
 }

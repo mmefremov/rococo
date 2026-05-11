@@ -1,9 +1,10 @@
 package io.efremov.rococo.service;
 
+import io.efremov.rococo.common.util.ByteStringCodec;
+import io.efremov.rococo.common.validation.FieldValidator;
 import io.efremov.rococo.data.MuseumEntity;
 import io.efremov.rococo.data.repository.MuseumRepository;
 import io.efremov.rococo.common.exception.EntityNotFoundException;
-import java.nio.charset.StandardCharsets;
 import java.util.Collection;
 import java.util.List;
 import java.util.UUID;
@@ -48,7 +49,7 @@ public class MuseumService {
     entity.setDescription(description);
     entity.setCity(city);
     entity.setCountryId(countryId);
-    entity.setPhoto(photoBase64.getBytes(StandardCharsets.UTF_8));
+    entity.setPhoto(ByteStringCodec.encode(photoBase64));
     return museumRepository.save(entity);
   }
 
@@ -67,7 +68,7 @@ public class MuseumService {
     entity.setDescription(description);
     entity.setCity(city);
     entity.setCountryId(countryId);
-    entity.setPhoto(photoBase64.getBytes(StandardCharsets.UTF_8));
+    entity.setPhoto(ByteStringCodec.encode(photoBase64));
     return museumRepository.save(entity);
   }
 
@@ -89,32 +90,14 @@ public class MuseumService {
 
   private static void validateMuseumFields(String title, String description, String photoBase64, String city,
       UUID countryId) {
-    if (title == null || title.trim().isBlank()) {
-      throw new IllegalArgumentException("title: must not be blank");
-    }
-    if (title.length() < 3 || title.length() > 255) {
-      throw new IllegalArgumentException("title: must be from 3 to 255 characters");
-    }
-    if (description == null || description.trim().isBlank()) {
-      throw new IllegalArgumentException("description: must not be blank");
-    }
-    if (description.length() < 10 || description.length() > 1000) {
-      throw new IllegalArgumentException("description: must be from 10 to 1000 characters");
-    }
-    if (city == null || city.trim().isBlank()) {
-      throw new IllegalArgumentException("city: must not be blank");
-    }
-    if (city.length() < 3 || city.length() > 255) {
-      throw new IllegalArgumentException("city: must be from 3 to 255 characters");
-    }
-    if (photoBase64 == null || photoBase64.trim().isBlank()) {
-      throw new IllegalArgumentException("photo: must not be blank");
-    }
-    if (photoBase64.length() > 1_048_576) {
-      throw new IllegalArgumentException("photo: must not exceed 1 MB");
-    }
-    if (countryId == null) {
-      throw new IllegalArgumentException("countryId: must not be null");
-    }
+    FieldValidator.requireNotBlank(title, "title");
+    FieldValidator.requireLength(title, "title", 3, 255);
+    FieldValidator.requireNotBlank(description, "description");
+    FieldValidator.requireLength(description, "description", 10, 1000);
+    FieldValidator.requireNotBlank(city, "city");
+    FieldValidator.requireLength(city, "city", 3, 255);
+    FieldValidator.requireNotBlank(photoBase64, "photo");
+    FieldValidator.requireMaxByteSize(photoBase64, "photo", 1_048_576);
+    FieldValidator.requireNotNull(countryId, "countryId");
   }
 }

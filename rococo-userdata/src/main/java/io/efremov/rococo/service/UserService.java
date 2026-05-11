@@ -1,9 +1,9 @@
 package io.efremov.rococo.service;
 
+import io.efremov.rococo.common.exception.EntityNotFoundException;
+import io.efremov.rococo.common.util.ByteStringCodec;
 import io.efremov.rococo.data.UserEntity;
 import io.efremov.rococo.data.repository.UserRepository;
-import io.efremov.rococo.common.exception.EntityNotFoundException;
-import java.nio.charset.StandardCharsets;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.jspecify.annotations.NonNull;
@@ -57,7 +57,7 @@ public class UserService {
       user.setLastName(lastName);
     }
     if (!avatarBase64.isBlank()) {
-      user.setAvatar(avatarBase64.getBytes(StandardCharsets.UTF_8));
+      user.setAvatar(ByteStringCodec.encode(avatarBase64));
     }
     return userRepository.save(user);
   }

@@ -1,9 +1,10 @@
 package io.efremov.rococo.service;
 
+import io.efremov.rococo.common.util.ByteStringCodec;
+import io.efremov.rococo.common.validation.FieldValidator;
 import io.efremov.rococo.data.PaintingEntity;
 import io.efremov.rococo.data.repository.PaintingRepository;
 import io.efremov.rococo.common.exception.EntityNotFoundException;
-import java.nio.charset.StandardCharsets;
 import java.util.Base64;
 import java.util.Collection;
 import java.util.List;
@@ -62,7 +63,7 @@ public class PaintingService {
     entity.setDescription(description);
     entity.setArtistId(artistId);
     entity.setMuseumId(museumId);
-    entity.setContent(contentBase64.getBytes(StandardCharsets.UTF_8));
+    entity.setContent(ByteStringCodec.encode(contentBase64));
     return paintingRepository.save(entity);
   }
 
@@ -81,7 +82,7 @@ public class PaintingService {
     entity.setDescription(description);
     entity.setArtistId(artistId);
     entity.setMuseumId(museumId);
-    entity.setContent(contentBase64.getBytes(StandardCharsets.UTF_8));
+    entity.setContent(ByteStringCodec.encode(contentBase64));
     return paintingRepository.save(entity);
   }
 
@@ -102,26 +103,12 @@ public class PaintingService {
   }
 
   private static void validatePaintingFields(String title, String description, String contentBase64, UUID artistId) {
-    if (title == null || title.trim().isBlank()) {
-      throw new IllegalArgumentException("title: must not be blank");
-    }
-    if (title.length() < 3 || title.length() > 255) {
-      throw new IllegalArgumentException("title: must be from 3 to 255 characters");
-    }
-    if (description == null || description.trim().isBlank()) {
-      throw new IllegalArgumentException("description: must not be blank");
-    }
-    if (description.length() < 10 || description.length() > 1000) {
-      throw new IllegalArgumentException("description: must be from 10 to 1000 characters");
-    }
-    if (contentBase64 == null || contentBase64.trim().isBlank()) {
-      throw new IllegalArgumentException("content: must not be blank");
-    }
-    if (contentBase64.length() > 1_048_576) {
-      throw new IllegalArgumentException("content: must not exceed 1 MB");
-    }
-    if (artistId == null) {
-      throw new IllegalArgumentException("artistId: must not be null");
-    }
+    FieldValidator.requireNotBlank(title, "title");
+    FieldValidator.requireLength(title, "title", 3, 255);
+    FieldValidator.requireNotBlank(description, "description");
+    FieldValidator.requireLength(description, "description", 10, 1000);
+    FieldValidator.requireNotBlank(contentBase64, "content");
+    FieldValidator.requireMaxByteSize(contentBase64, "content", 1_048_576);
+    FieldValidator.requireNotNull(artistId, "artistId");
   }
 }

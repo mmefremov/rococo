@@ -1,9 +1,10 @@
 package io.efremov.rococo.service;
 
+import io.efremov.rococo.common.util.ByteStringCodec;
+import io.efremov.rococo.common.validation.FieldValidator;
 import io.efremov.rococo.data.ArtistEntity;
 import io.efremov.rococo.data.repository.ArtistRepository;
 import io.efremov.rococo.common.exception.EntityNotFoundException;
-import java.nio.charset.StandardCharsets;
 import java.util.List;
 import java.util.UUID;
 import lombok.RequiredArgsConstructor;
@@ -34,24 +35,12 @@ public class ArtistService {
   }
 
   private static void validateArtistFields(String name, String biography, String photoBase64) {
-    if (name == null || name.trim().isBlank()) {
-      throw new IllegalArgumentException("name: must not be blank");
-    }
-    if (name.length() < 3 || name.length() > 255) {
-      throw new IllegalArgumentException("name: must be from 3 to 255 characters");
-    }
-    if (biography == null || biography.trim().isBlank()) {
-      throw new IllegalArgumentException("biography: must not be blank");
-    }
-    if (biography.length() < 10 || biography.length() > 2000) {
-      throw new IllegalArgumentException("biography: must be from 10 to 2000 characters");
-    }
-    if (photoBase64 == null || photoBase64.isBlank()) {
-      throw new IllegalArgumentException("photo: must not be blank");
-    }
-    if (photoBase64.length() > 1_048_576) {
-      throw new IllegalArgumentException("photo: must not exceed 1 MB");
-    }
+    FieldValidator.requireNotBlank(name, "name");
+    FieldValidator.requireLength(name, "name", 3, 255);
+    FieldValidator.requireNotBlank(biography, "biography");
+    FieldValidator.requireLength(biography, "biography", 10, 2000);
+    FieldValidator.requireNotBlank(photoBase64, "photo");
+    FieldValidator.requireMaxByteSize(photoBase64, "photo", 1_048_576);
   }
 
   @Transactional
@@ -65,7 +54,7 @@ public class ArtistService {
     ArtistEntity entity = new ArtistEntity();
     entity.setName(name);
     entity.setBiography(biography);
-    entity.setPhoto(photoBase64.getBytes(StandardCharsets.UTF_8));
+    entity.setPhoto(ByteStringCodec.encode(photoBase64));
     return artistRepository.save(entity);
   }
 
@@ -82,7 +71,7 @@ public class ArtistService {
     log.info("Updating artist id: {}", id);
     entity.setName(name);
     entity.setBiography(biography);
-    entity.setPhoto(photoBase64.getBytes(StandardCharsets.UTF_8));
+    entity.setPhoto(ByteStringCodec.encode(photoBase64));
     return artistRepository.save(entity);
   }
 

@@ -2,6 +2,7 @@ package io.efremov.rococo.service;
 
 import io.efremov.rococo.common.grpc.GrpcServiceTemplate;
 import io.efremov.rococo.common.grpc.PageMetadata;
+import io.efremov.rococo.common.util.ByteStringCodec;
 import io.efremov.rococo.data.ArtistEntity;
 import io.efremov.rococo.grpc.ArtistByIdRequest;
 import io.efremov.rococo.grpc.ArtistPageRequest;
@@ -89,7 +90,7 @@ public class GrpcArtistService extends ArtistServiceGrpc.ArtistServiceImplBase {
         .setId(artist.getId().toString())
         .setName(artist.getName())
         .setBiography(artist.getBiography())
-        .setPhoto(new String(artist.getPhoto()))
+        .setPhoto(ByteStringCodec.decode(artist.getPhoto()))
         .build();
   }
 }

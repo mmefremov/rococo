@@ -2,6 +2,7 @@ package io.efremov.rococo.service;
 
 import io.efremov.rococo.common.grpc.GrpcServiceTemplate;
 import io.efremov.rococo.common.grpc.PageMetadata;
+import io.efremov.rococo.common.util.ByteStringCodec;
 import io.efremov.rococo.data.MuseumEntity;
 import io.efremov.rococo.grpc.CreateMuseumRequest;
 import io.efremov.rococo.grpc.MuseumByIdRequest;
@@ -103,7 +104,7 @@ public class GrpcMuseumService extends MuseumServiceGrpc.MuseumServiceImplBase {
         .setId(museum.getId().toString())
         .setTitle(museum.getTitle())
         .setDescription(museum.getDescription())
-        .setPhoto(new String(museum.getPhoto()))
+        .setPhoto(ByteStringCodec.decode(museum.getPhoto()))
         .setCity(museum.getCity())
         .setCountryId(museum.getCountryId().toString())
         .build();

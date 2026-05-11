@@ -2,6 +2,7 @@ package io.efremov.rococo.service;
 
 import io.efremov.rococo.common.grpc.GrpcServiceTemplate;
 import io.efremov.rococo.common.grpc.PageMetadata;
+import io.efremov.rococo.common.util.ByteStringCodec;
 import io.efremov.rococo.data.PaintingEntity;
 import io.efremov.rococo.grpc.CreatePaintingRequest;
 import io.efremov.rococo.grpc.PaintingByArtistRequest;
@@ -122,7 +123,7 @@ public class GrpcPaintingService extends PaintingServiceGrpc.PaintingServiceImpl
         .setId(painting.getId().toString())
         .setTitle(painting.getTitle())
         .setDescription(painting.getDescription())
-        .setContent(new String(painting.getContent()))
+        .setContent(ByteStringCodec.decode(painting.getContent()))
         .setArtistId(painting.getArtistId().toString());
     if (painting.getMuseumId() != null) {
       builder.setMuseumId(painting.getMuseumId().toString());
