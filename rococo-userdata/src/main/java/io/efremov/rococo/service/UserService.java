@@ -47,7 +47,9 @@ public class UserService {
     if (!lastName.isBlank() && lastName.length() > 255) {
       throw new IllegalArgumentException("lastName: must not exceed 255 characters");
     }
-    FieldValidator.requireMaxByteSize(avatarBase64, "photo", 1_048_576);
+    if (!avatarBase64.isBlank()) {
+      FieldValidator.requireImageBase64(avatarBase64, "photo");
+    }
     log.info("Updating user profile for: {}", username);
     if (!firstName.isBlank()) {
       user.setFirstName(firstName);

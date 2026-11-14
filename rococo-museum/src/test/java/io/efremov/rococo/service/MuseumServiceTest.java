@@ -7,9 +7,9 @@ import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
+import io.efremov.rococo.common.exception.EntityNotFoundException;
 import io.efremov.rococo.data.MuseumEntity;
 import io.efremov.rococo.data.repository.MuseumRepository;
-import io.efremov.rococo.common.exception.EntityNotFoundException;
 import java.util.Collection;
 import java.util.List;
 import java.util.Optional;
@@ -26,6 +26,8 @@ import org.springframework.data.domain.PageRequest;
 
 @ExtendWith(MockitoExtension.class)
 class MuseumServiceTest {
+
+  private static final String IMAGE_BASE64 = "data:image/png;base64,iVBORw0KGgo=";
 
   @Mock
   private MuseumRepository museumRepository;
@@ -95,7 +97,7 @@ class MuseumServiceTest {
     when(museumRepository.existsByTitleIgnoreCaseAndCityIgnoreCase("Prado", "Madrid")).thenReturn(false);
     when(museumRepository.save(any(MuseumEntity.class))).thenReturn(saved);
 
-    MuseumEntity result = museumService.create("Prado", "Spanish museum", "photo", "Madrid", countryId);
+    MuseumEntity result = museumService.create("Prado", "Spanish museum", IMAGE_BASE64, "Madrid", countryId);
 
     assertThat(result.getTitle()).isEqualTo("Prado");
     verify(museumRepository).save(any(MuseumEntity.class));
@@ -107,7 +109,7 @@ class MuseumServiceTest {
     when(museumRepository.existsByTitleIgnoreCaseAndCityIgnoreCase("Hermitage", "St. Petersburg")).thenReturn(true);
 
     assertThatThrownBy(
-        () -> museumService.create("Hermitage", "valid description text", "photo", "St. Petersburg", countryId))
+        () -> museumService.create("Hermitage", "valid description text", IMAGE_BASE64, "St. Petersburg", countryId))
         .isInstanceOf(DataIntegrityViolationException.class)
         .hasMessage("Museum title already taken: Hermitage");
   }
@@ -124,14 +126,15 @@ class MuseumServiceTest {
     when(museumRepository.findById(id)).thenReturn(Optional.of(existing));
     when(museumRepository.save(any(MuseumEntity.class))).thenReturn(updated);
 
-    MuseumEntity result = museumService.update(id, "New Title", "Description", "photo", "City", countryId);
+    MuseumEntity result = museumService.update(id, "New Title", "Description", IMAGE_BASE64, "City", countryId);
 
     assertThat(result.getTitle()).isEqualTo("New Title");
   }
 
   @Test
   void create_nullTitle_throwsIllegalArgumentException() {
-    assertThatThrownBy(() -> museumService.create(null, "valid description text", "photo", "City", UUID.randomUUID()))
+    assertThatThrownBy(
+        () -> museumService.create(null, "valid description text", IMAGE_BASE64, "City", UUID.randomUUID()))
         .isInstanceOf(IllegalArgumentException.class)
         .hasMessageContaining("title");
   }
@@ -140,14 +143,14 @@ class MuseumServiceTest {
   void create_titleTooLong_throwsIllegalArgumentException() {
     String longTitle = "t".repeat(256);
     assertThatThrownBy(
-        () -> museumService.create(longTitle, "valid description text", "photo", "City", UUID.randomUUID()))
+        () -> museumService.create(longTitle, "valid description text", IMAGE_BASE64, "City", UUID.randomUUID()))
         .isInstanceOf(IllegalArgumentException.class)
         .hasMessageContaining("title");
   }
 
   @Test
   void create_nullDescription_throwsIllegalArgumentException() {
-    assertThatThrownBy(() -> museumService.create("Title", null, "photo", "City", UUID.randomUUID()))
+    assertThatThrownBy(() -> museumService.create("Title", null, IMAGE_BASE64, "City", UUID.randomUUID()))
         .isInstanceOf(IllegalArgumentException.class)
         .hasMessageContaining("description");
   }
@@ -155,14 +158,15 @@ class MuseumServiceTest {
   @Test
   void create_descriptionTooLong_throwsIllegalArgumentException() {
     String longDesc = "d".repeat(1001);
-    assertThatThrownBy(() -> museumService.create("Title", longDesc, "photo", "City", UUID.randomUUID()))
+    assertThatThrownBy(() -> museumService.create("Title", longDesc, IMAGE_BASE64, "City", UUID.randomUUID()))
         .isInstanceOf(IllegalArgumentException.class)
         .hasMessageContaining("description");
   }
 
   @Test
   void create_nullCity_throwsIllegalArgumentException() {
-    assertThatThrownBy(() -> museumService.create("Title", "valid description text", "photo", null, UUID.randomUUID()))
+    assertThatThrownBy(
+        () -> museumService.create("Title", "valid description text", IMAGE_BASE64, null, UUID.randomUUID()))
         .isInstanceOf(IllegalArgumentException.class)
         .hasMessageContaining("city");
   }
@@ -176,7 +180,7 @@ class MuseumServiceTest {
 
   @Test
   void create_nullCountryId_throwsIllegalArgumentException() {
-    assertThatThrownBy(() -> museumService.create("Title", "valid description text", "photo", "City", null))
+    assertThatThrownBy(() -> museumService.create("Title", "valid description text", IMAGE_BASE64, "City", null))
         .isInstanceOf(IllegalArgumentException.class)
         .hasMessageContaining("countryId");
   }
@@ -186,7 +190,7 @@ class MuseumServiceTest {
     UUID id = UUID.randomUUID();
     when(museumRepository.findById(id)).thenReturn(Optional.of(createMuseum("Test")));
     assertThatThrownBy(
-        () -> museumService.update(id, null, "valid description text", "photo", "City", UUID.randomUUID()))
+        () -> museumService.update(id, null, "valid description text", IMAGE_BASE64, "City", UUID.randomUUID()))
         .isInstanceOf(IllegalArgumentException.class)
         .hasMessageContaining("title");
   }
@@ -196,7 +200,7 @@ class MuseumServiceTest {
     UUID id = UUID.randomUUID();
     when(museumRepository.findById(id)).thenReturn(Optional.of(createMuseum("Test")));
     String longDesc = "d".repeat(1001);
-    assertThatThrownBy(() -> museumService.update(id, "Title", longDesc, "photo", "City", UUID.randomUUID()))
+    assertThatThrownBy(() -> museumService.update(id, "Title", longDesc, IMAGE_BASE64, "City", UUID.randomUUID()))
         .isInstanceOf(IllegalArgumentException.class)
         .hasMessageContaining("description");
   }

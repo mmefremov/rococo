@@ -1,12 +1,34 @@
 package io.efremov.rococo.common.validation;
 
 import java.nio.charset.StandardCharsets;
+import java.util.Base64;
+import java.util.Set;
 import org.jspecify.annotations.NonNull;
 import org.jspecify.annotations.Nullable;
 
 public final class FieldValidator {
 
+  private static final Set<String> IMAGE_PREFIXES = Set.of(
+      "data:image/jpeg;base64,", "data:image/png;base64,", "data:image/webp;base64,");
+
   private FieldValidator() {}
+
+  public static void requireImageBase64(@Nullable String value, @NonNull String fieldName) {
+    requireNotBlank(value, fieldName);
+    requireMaxByteSize(value, fieldName, 1_048_576);
+    if (IMAGE_PREFIXES.stream().noneMatch(value::startsWith)) {
+      throw new IllegalArgumentException(fieldName + ": must be a base64-encoded JPEG, PNG or WebP image");
+    }
+    byte[] decoded;
+    try {
+      decoded = Base64.getDecoder().decode(value.substring(value.indexOf(',') + 1));
+    } catch (IllegalArgumentException e) {
+      throw new IllegalArgumentException(fieldName + ": invalid base64 encoding", e);
+    }
+    if (decoded.length == 0) {
+      throw new IllegalArgumentException(fieldName + ": image payload must not be empty");
+    }
+  }
 
   public static void requireNotBlank(@Nullable String value, @NonNull String fieldName) {
     if (value == null || value.isBlank()) {

@@ -8,9 +8,9 @@ import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.verifyNoMoreInteractions;
 import static org.mockito.Mockito.when;
 
+import io.efremov.rococo.common.exception.EntityNotFoundException;
 import io.efremov.rococo.data.ArtistEntity;
 import io.efremov.rococo.data.repository.ArtistRepository;
-import io.efremov.rococo.common.exception.EntityNotFoundException;
 import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
@@ -26,6 +26,8 @@ import org.springframework.data.domain.PageRequest;
 
 @ExtendWith(MockitoExtension.class)
 class ArtistServiceTest {
+
+  private static final String IMAGE_BASE64 = "data:image/png;base64,iVBORw0KGgo=";
 
   @Mock
   private ArtistRepository artistRepository;
@@ -96,7 +98,7 @@ class ArtistServiceTest {
     when(artistRepository.existsByNameIgnoreCase("Picasso")).thenReturn(false);
     when(artistRepository.save(any(ArtistEntity.class))).thenReturn(saved);
 
-    ArtistEntity result = artistService.create("Picasso", "Biography text", "photo");
+    ArtistEntity result = artistService.create("Picasso", "Biography text", IMAGE_BASE64);
 
     assertThat(result.getName()).isEqualTo("Picasso");
     verify(artistRepository).save(any(ArtistEntity.class));
@@ -106,7 +108,7 @@ class ArtistServiceTest {
   void create_duplicateName_throwsDataIntegrityViolationException() {
     when(artistRepository.existsByNameIgnoreCase("Monet")).thenReturn(true);
 
-    assertThatThrownBy(() -> artistService.create("Monet", "Biography text", "photo"))
+    assertThatThrownBy(() -> artistService.create("Monet", "Biography text", IMAGE_BASE64))
         .isInstanceOf(DataIntegrityViolationException.class)
         .hasMessage("Artist name already taken: Monet");
   }
@@ -122,7 +124,7 @@ class ArtistServiceTest {
     when(artistRepository.findById(id)).thenReturn(Optional.of(existing));
     when(artistRepository.save(any(ArtistEntity.class))).thenReturn(updated);
 
-    ArtistEntity result = artistService.update(id, "New Name", "New biography", "photo");
+    ArtistEntity result = artistService.update(id, "New Name", "New biography", IMAGE_BASE64);
 
     assertThat(result.getName()).isEqualTo("New Name");
     verify(artistRepository).save(any(ArtistEntity.class));
@@ -133,20 +135,20 @@ class ArtistServiceTest {
     UUID id = UUID.randomUUID();
     when(artistRepository.findById(id)).thenReturn(Optional.empty());
 
-    assertThatThrownBy(() -> artistService.update(id, "Name", "Bio", "photo"))
+    assertThatThrownBy(() -> artistService.update(id, "Name", "Bio", IMAGE_BASE64))
         .isInstanceOf(EntityNotFoundException.class);
   }
 
   @Test
   void create_nullName_throwsIllegalArgumentException() {
-    assertThatThrownBy(() -> artistService.create(null, "Biography text", "photo"))
+    assertThatThrownBy(() -> artistService.create(null, "Biography text", IMAGE_BASE64))
         .isInstanceOf(IllegalArgumentException.class)
         .hasMessageContaining("name");
   }
 
   @Test
   void create_blankName_throwsIllegalArgumentException() {
-    assertThatThrownBy(() -> artistService.create("   ", "Biography text", "photo"))
+    assertThatThrownBy(() -> artistService.create("   ", "Biography text", IMAGE_BASE64))
         .isInstanceOf(IllegalArgumentException.class)
         .hasMessageContaining("name");
   }
@@ -154,14 +156,14 @@ class ArtistServiceTest {
   @Test
   void create_nameTooLong_throwsIllegalArgumentException() {
     String longName = "a".repeat(256);
-    assertThatThrownBy(() -> artistService.create(longName, "Biography text", "photo"))
+    assertThatThrownBy(() -> artistService.create(longName, "Biography text", IMAGE_BASE64))
         .isInstanceOf(IllegalArgumentException.class)
         .hasMessageContaining("name");
   }
 
   @Test
   void create_nullBiography_throwsIllegalArgumentException() {
-    assertThatThrownBy(() -> artistService.create("Monet", null, "photo"))
+    assertThatThrownBy(() -> artistService.create("Monet", null, IMAGE_BASE64))
         .isInstanceOf(IllegalArgumentException.class)
         .hasMessageContaining("biography");
   }
@@ -169,7 +171,7 @@ class ArtistServiceTest {
   @Test
   void create_biographyTooLong_throwsIllegalArgumentException() {
     String longBio = "b".repeat(2001);
-    assertThatThrownBy(() -> artistService.create("Monet", longBio, "photo"))
+    assertThatThrownBy(() -> artistService.create("Monet", longBio, IMAGE_BASE64))
         .isInstanceOf(IllegalArgumentException.class)
         .hasMessageContaining("biography");
   }
@@ -185,7 +187,7 @@ class ArtistServiceTest {
   void update_nullName_throwsIllegalArgumentException() {
     UUID id = UUID.randomUUID();
     mockFindById(id);
-    assertThatThrownBy(() -> artistService.update(id, null, "Biography text", "photo"))
+    assertThatThrownBy(() -> artistService.update(id, null, "Biography text", IMAGE_BASE64))
         .isInstanceOf(IllegalArgumentException.class)
         .hasMessageContaining("name");
   }
@@ -195,7 +197,7 @@ class ArtistServiceTest {
     UUID id = UUID.randomUUID();
     mockFindById(id);
     String longName = "a".repeat(256);
-    assertThatThrownBy(() -> artistService.update(id, longName, "Biography text", "photo"))
+    assertThatThrownBy(() -> artistService.update(id, longName, "Biography text", IMAGE_BASE64))
         .isInstanceOf(IllegalArgumentException.class)
         .hasMessageContaining("name");
   }
@@ -205,7 +207,7 @@ class ArtistServiceTest {
     UUID id = UUID.randomUUID();
     mockFindById(id);
     String longBio = "b".repeat(2001);
-    assertThatThrownBy(() -> artistService.update(id, "Monet", longBio, "photo"))
+    assertThatThrownBy(() -> artistService.update(id, "Monet", longBio, IMAGE_BASE64))
         .isInstanceOf(IllegalArgumentException.class)
         .hasMessageContaining("biography");
   }

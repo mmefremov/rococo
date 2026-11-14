@@ -1,10 +1,10 @@
 package io.efremov.rococo.service;
 
+import io.efremov.rococo.common.exception.EntityNotFoundException;
 import io.efremov.rococo.common.util.ByteStringCodec;
 import io.efremov.rococo.common.validation.FieldValidator;
 import io.efremov.rococo.data.PaintingEntity;
 import io.efremov.rococo.data.repository.PaintingRepository;
-import io.efremov.rococo.common.exception.EntityNotFoundException;
 import java.util.Collection;
 import java.util.List;
 import java.util.UUID;
@@ -99,8 +99,7 @@ public class PaintingService {
     FieldValidator.requireLength(title, "title", 3, 255);
     FieldValidator.requireNotBlank(description, "description");
     FieldValidator.requireLength(description, "description", 10, 1000);
-    FieldValidator.requireNotBlank(contentBase64, "content");
-    FieldValidator.requireMaxByteSize(contentBase64, "content", 1_048_576);
+    FieldValidator.requireImageBase64(contentBase64, "content");
     FieldValidator.requireNotNull(artistId, "artistId");
   }
 }

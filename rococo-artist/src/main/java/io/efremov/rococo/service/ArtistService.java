@@ -1,10 +1,10 @@
 package io.efremov.rococo.service;
 
+import io.efremov.rococo.common.exception.EntityNotFoundException;
 import io.efremov.rococo.common.util.ByteStringCodec;
 import io.efremov.rococo.common.validation.FieldValidator;
 import io.efremov.rococo.data.ArtistEntity;
 import io.efremov.rococo.data.repository.ArtistRepository;
-import io.efremov.rococo.common.exception.EntityNotFoundException;
 import java.util.Collection;
 import java.util.List;
 import java.util.UUID;
@@ -40,8 +40,7 @@ public class ArtistService {
     FieldValidator.requireLength(name, "name", 3, 255);
     FieldValidator.requireNotBlank(biography, "biography");
     FieldValidator.requireLength(biography, "biography", 10, 2000);
-    FieldValidator.requireNotBlank(photoBase64, "photo");
-    FieldValidator.requireMaxByteSize(photoBase64, "photo", 1_048_576);
+    FieldValidator.requireImageBase64(photoBase64, "photo");
   }
 
   @Transactional
@@ -79,7 +78,9 @@ public class ArtistService {
   @Transactional(readOnly = true)
   public @NonNull List<ArtistEntity> findAllByIds(@NonNull Collection<UUID> ids) {
     log.debug("Fetching artists by ids, count={}", ids.size());
-    if (ids.isEmpty()) return List.of();
+    if (ids.isEmpty()) {
+      return List.of();
+    }
     return artistRepository.findAllById(ids);
   }
 

@@ -7,9 +7,9 @@ import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
+import io.efremov.rococo.common.exception.EntityNotFoundException;
 import io.efremov.rococo.data.PaintingEntity;
 import io.efremov.rococo.data.repository.PaintingRepository;
-import io.efremov.rococo.common.exception.EntityNotFoundException;
 import java.util.Collection;
 import java.util.List;
 import java.util.Optional;
@@ -26,6 +26,8 @@ import org.springframework.data.domain.PageRequest;
 
 @ExtendWith(MockitoExtension.class)
 class PaintingServiceTest {
+
+  private static final String IMAGE_BASE64 = "data:image/png;base64,iVBORw0KGgo=";
 
   @Mock
   private PaintingRepository paintingRepository;
@@ -111,7 +113,7 @@ class PaintingServiceTest {
     when(paintingRepository.existsByTitleIgnoreCaseAndArtistId("The Scream", artistId)).thenReturn(false);
     when(paintingRepository.save(any(PaintingEntity.class))).thenReturn(saved);
 
-    PaintingEntity result = paintingService.create("The Scream", "valid description text", "content", artistId,
+    PaintingEntity result = paintingService.create("The Scream", "valid description text", IMAGE_BASE64, artistId,
         museumId);
 
     assertThat(result.getArtistId()).isEqualTo(artistId);
@@ -126,7 +128,7 @@ class PaintingServiceTest {
     when(paintingRepository.existsByTitleIgnoreCaseAndArtistId("Guernica", artistId)).thenReturn(false);
     when(paintingRepository.save(any(PaintingEntity.class))).thenReturn(saved);
 
-    PaintingEntity result = paintingService.create("Guernica", "valid description text", "content", artistId, null);
+    PaintingEntity result = paintingService.create("Guernica", "valid description text", IMAGE_BASE64, artistId, null);
 
     assertThat(result.getMuseumId()).isNull();
   }
@@ -136,14 +138,16 @@ class PaintingServiceTest {
     UUID artistId = UUID.randomUUID();
     when(paintingRepository.existsByTitleIgnoreCaseAndArtistId("Mona Lisa", artistId)).thenReturn(true);
 
-    assertThatThrownBy(() -> paintingService.create("Mona Lisa", "valid description text", "content", artistId, null))
+    assertThatThrownBy(
+        () -> paintingService.create("Mona Lisa", "valid description text", IMAGE_BASE64, artistId, null))
         .isInstanceOf(DataIntegrityViolationException.class)
         .hasMessage("Painting already exists: Mona Lisa");
   }
 
   @Test
   void create_nullTitle_throwsIllegalArgumentException() {
-    assertThatThrownBy(() -> paintingService.create(null, "valid description text", "content", UUID.randomUUID(), null))
+    assertThatThrownBy(
+        () -> paintingService.create(null, "valid description text", IMAGE_BASE64, UUID.randomUUID(), null))
         .isInstanceOf(IllegalArgumentException.class)
         .hasMessageContaining("title");
   }
@@ -152,14 +156,14 @@ class PaintingServiceTest {
   void create_titleTooLong_throwsIllegalArgumentException() {
     String longTitle = "t".repeat(256);
     assertThatThrownBy(
-        () -> paintingService.create(longTitle, "valid description text", "content", UUID.randomUUID(), null))
+        () -> paintingService.create(longTitle, "valid description text", IMAGE_BASE64, UUID.randomUUID(), null))
         .isInstanceOf(IllegalArgumentException.class)
         .hasMessageContaining("title");
   }
 
   @Test
   void create_nullDescription_throwsIllegalArgumentException() {
-    assertThatThrownBy(() -> paintingService.create("Title", null, "content", UUID.randomUUID(), null))
+    assertThatThrownBy(() -> paintingService.create("Title", null, IMAGE_BASE64, UUID.randomUUID(), null))
         .isInstanceOf(IllegalArgumentException.class)
         .hasMessageContaining("description");
   }
@@ -167,7 +171,7 @@ class PaintingServiceTest {
   @Test
   void create_descriptionTooLong_throwsIllegalArgumentException() {
     String longDesc = "d".repeat(1001);
-    assertThatThrownBy(() -> paintingService.create("Title", longDesc, "content", UUID.randomUUID(), null))
+    assertThatThrownBy(() -> paintingService.create("Title", longDesc, IMAGE_BASE64, UUID.randomUUID(), null))
         .isInstanceOf(IllegalArgumentException.class)
         .hasMessageContaining("description");
   }
@@ -181,7 +185,7 @@ class PaintingServiceTest {
 
   @Test
   void create_nullArtistId_throwsIllegalArgumentException() {
-    assertThatThrownBy(() -> paintingService.create("Title", "valid description text", "content", null, null))
+    assertThatThrownBy(() -> paintingService.create("Title", "valid description text", IMAGE_BASE64, null, null))
         .isInstanceOf(IllegalArgumentException.class)
         .hasMessageContaining("artistId");
   }
@@ -191,7 +195,7 @@ class PaintingServiceTest {
     UUID id = UUID.randomUUID();
     when(paintingRepository.findById(id)).thenReturn(Optional.of(createPainting("Test")));
     assertThatThrownBy(
-        () -> paintingService.update(id, null, "valid description text", "content", UUID.randomUUID(), null))
+        () -> paintingService.update(id, null, "valid description text", IMAGE_BASE64, UUID.randomUUID(), null))
         .isInstanceOf(IllegalArgumentException.class)
         .hasMessageContaining("title");
   }
@@ -201,7 +205,7 @@ class PaintingServiceTest {
     UUID id = UUID.randomUUID();
     when(paintingRepository.findById(id)).thenReturn(Optional.of(createPainting("Test")));
     String longDesc = "d".repeat(1001);
-    assertThatThrownBy(() -> paintingService.update(id, "Title", longDesc, "content", UUID.randomUUID(), null))
+    assertThatThrownBy(() -> paintingService.update(id, "Title", longDesc, IMAGE_BASE64, UUID.randomUUID(), null))
         .isInstanceOf(IllegalArgumentException.class)
         .hasMessageContaining("description");
   }

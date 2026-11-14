@@ -1,10 +1,10 @@
 package io.efremov.rococo.service;
 
+import io.efremov.rococo.common.exception.EntityNotFoundException;
 import io.efremov.rococo.common.util.ByteStringCodec;
 import io.efremov.rococo.common.validation.FieldValidator;
 import io.efremov.rococo.data.MuseumEntity;
 import io.efremov.rococo.data.repository.MuseumRepository;
-import io.efremov.rococo.common.exception.EntityNotFoundException;
 import java.util.Collection;
 import java.util.List;
 import java.util.UUID;
@@ -96,8 +96,7 @@ public class MuseumService {
     FieldValidator.requireLength(description, "description", 10, 1000);
     FieldValidator.requireNotBlank(city, "city");
     FieldValidator.requireLength(city, "city", 3, 255);
-    FieldValidator.requireNotBlank(photoBase64, "photo");
-    FieldValidator.requireMaxByteSize(photoBase64, "photo", 1_048_576);
+    FieldValidator.requireImageBase64(photoBase64, "photo");
     FieldValidator.requireNotNull(countryId, "countryId");
   }
 }
