@@ -65,6 +65,12 @@ services:
         condition: service_healthy
       rococo-kafka:
         condition: service_healthy
+    healthcheck:
+      test: [ "CMD-SHELL", "wget -qO- http://localhost:9000/actuator/health | grep -q '\"status\":\"UP\"'" ]
+      interval: 10s
+      timeout: 5s
+      retries: 10
+      start_period: 30s
     profiles: [ "modules" ]
     restart: unless-stopped
     networks:
@@ -83,6 +89,12 @@ services:
         condition: service_healthy
       rococo-kafka:
         condition: service_healthy
+    healthcheck:
+      test: [ "CMD-SHELL", "wget -qO- http://localhost:8091/actuator/health | grep -q '\"status\":\"UP\"'" ]
+      interval: 10s
+      timeout: 5s
+      retries: 10
+      start_period: 30s
     profiles: [ "modules" ]
     restart: unless-stopped
     networks:
@@ -99,6 +111,12 @@ services:
     depends_on:
       rococo-postgres:
         condition: service_healthy
+    healthcheck:
+      test: [ "CMD-SHELL", "wget -qO- http://localhost:8093/actuator/health | grep -q '\"status\":\"UP\"'" ]
+      interval: 10s
+      timeout: 5s
+      retries: 10
+      start_period: 30s
     profiles: [ "modules" ]
     restart: unless-stopped
     networks:
@@ -115,6 +133,12 @@ services:
     depends_on:
       rococo-postgres:
         condition: service_healthy
+    healthcheck:
+      test: [ "CMD-SHELL", "wget -qO- http://localhost:8095/actuator/health | grep -q '\"status\":\"UP\"'" ]
+      interval: 10s
+      timeout: 5s
+      retries: 10
+      start_period: 30s
     profiles: [ "modules" ]
     restart: unless-stopped
     networks:
@@ -132,7 +156,13 @@ services:
       rococo-postgres:
         condition: service_healthy
       rococo-geo:
-        condition: service_started
+        condition: service_healthy
+    healthcheck:
+      test: [ "CMD-SHELL", "wget -qO- http://localhost:8097/actuator/health | grep -q '\"status\":\"UP\"'" ]
+      interval: 10s
+      timeout: 5s
+      retries: 10
+      start_period: 30s
     profiles: [ "modules" ]
     restart: unless-stopped
     networks:
@@ -150,9 +180,15 @@ services:
       rococo-postgres:
         condition: service_healthy
       rococo-artist:
-        condition: service_started
+        condition: service_healthy
       rococo-museum:
-        condition: service_started
+        condition: service_healthy
+    healthcheck:
+      test: [ "CMD-SHELL", "wget -qO- http://localhost:8099/actuator/health | grep -q '\"status\":\"UP\"'" ]
+      interval: 10s
+      timeout: 5s
+      retries: 10
+      start_period: 30s
     profiles: [ "modules" ]
     restart: unless-stopped
     networks:
@@ -167,17 +203,23 @@ services:
       SPRING_PROFILES_ACTIVE: docker
     depends_on:
       rococo-auth:
-        condition: service_started
+        condition: service_healthy
       rococo-userdata:
-        condition: service_started
+        condition: service_healthy
       rococo-geo:
-        condition: service_started
+        condition: service_healthy
       rococo-artist:
-        condition: service_started
+        condition: service_healthy
       rococo-museum:
-        condition: service_started
+        condition: service_healthy
       rococo-painting:
-        condition: service_started
+        condition: service_healthy
+    healthcheck:
+      test: [ "CMD-SHELL", "wget -qO- http://localhost:8080/actuator/health | grep -q '\"status\":\"UP\"'" ]
+      interval: 10s
+      timeout: 5s
+      retries: 10
+      start_period: 30s
     profiles: [ "modules" ]
     restart: unless-stopped
     networks:
@@ -193,7 +235,7 @@ services:
       - "3000:80"
     depends_on:
       rococo-gateway:
-        condition: service_started
+        condition: service_healthy
     profiles: [ "modules" ]
     restart: unless-stopped
     networks:

@@ -118,6 +118,7 @@ subprojects {
 
     if (name in springBootServiceNames) {
         dependencies {
+            implementation 'org.springframework.boot:spring-boot-starter-actuator'
             annotationProcessor "org.projectlombok:lombok:${lombokVersion}"
             compileOnly "org.projectlombok:lombok:${lombokVersion}"
             testImplementation 'org.springframework.boot:spring-boot-starter-test'
@@ -128,6 +129,7 @@ subprojects {
 
     if (name in grpcServiceNames) {
         dependencies {
+            implementation 'org.springframework.boot:spring-boot-starter-web'
             implementation project(':rococo-grpc-common')
             implementation project(':rococo-common')
             implementation 'org.springframework.boot:spring-boot-starter-data-jpa'
