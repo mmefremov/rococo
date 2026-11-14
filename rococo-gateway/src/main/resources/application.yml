@@ -20,18 +20,23 @@ grpc:
     userdata:
       address: 'static://localhost:8092'
       negotiation-type: PLAINTEXT
+      deadline: 5s
     geo:
       address: 'static://localhost:8094'
       negotiation-type: PLAINTEXT
+      deadline: 5s
     artist:
       address: 'static://localhost:8096'
       negotiation-type: PLAINTEXT
+      deadline: 5s
     museum:
       address: 'static://localhost:8098'
       negotiation-type: PLAINTEXT
+      deadline: 5s
     painting:
       address: 'static://localhost:8100'
       negotiation-type: PLAINTEXT
+      deadline: 5s
 
 logging:
   level:
@@ -59,18 +64,23 @@ grpc:
     userdata:
       address: 'static://rococo-userdata:8092'
       negotiation-type: PLAINTEXT
+      deadline: 5s
     geo:
       address: 'static://rococo-geo:8094'
       negotiation-type: PLAINTEXT
+      deadline: 5s
     artist:
       address: 'static://rococo-artist:8096'
       negotiation-type: PLAINTEXT
+      deadline: 5s
     museum:
       address: 'static://rococo-museum:8098'
       negotiation-type: PLAINTEXT
+      deadline: 5s
     painting:
       address: 'static://rococo-painting:8100'
       negotiation-type: PLAINTEXT
+      deadline: 5s
 
 rococo-front:
   base-uri: 'http://rococo-client'

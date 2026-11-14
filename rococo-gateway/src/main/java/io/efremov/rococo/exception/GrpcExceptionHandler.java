@@ -22,6 +22,7 @@ public class GrpcExceptionHandler {
       case INVALID_ARGUMENT -> HttpStatus.BAD_REQUEST;
       case UNAUTHENTICATED -> HttpStatus.UNAUTHORIZED;
       case PERMISSION_DENIED -> HttpStatus.FORBIDDEN;
+      case DEADLINE_EXCEEDED -> HttpStatus.GATEWAY_TIMEOUT;
       default -> HttpStatus.INTERNAL_SERVER_ERROR;
     };
     log.warn("gRPC exception {}: {}", status, e.getStatus().getDescription());

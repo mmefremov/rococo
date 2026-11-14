@@ -8,9 +8,11 @@ grpc:
     artist:
       address: 'static://localhost:8096'
       negotiation-type: PLAINTEXT
+      deadline: 5s
     museum:
       address: 'static://localhost:8098'
       negotiation-type: PLAINTEXT
+      deadline: 5s
 
 spring:
   application:
@@ -59,6 +61,8 @@ grpc:
     artist:
       address: 'static://rococo-artist:8096'
       negotiation-type: PLAINTEXT
+      deadline: 5s
     museum:
       address: 'static://rococo-museum:8098'
       negotiation-type: PLAINTEXT
+      deadline: 5s

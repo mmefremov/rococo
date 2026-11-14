@@ -8,6 +8,7 @@ grpc:
     geo:
       address: 'static://localhost:8094'
       negotiation-type: PLAINTEXT
+      deadline: 5s
 
 spring:
   application:
@@ -56,3 +57,4 @@ grpc:
     geo:
       address: 'static://rococo-geo:8094'
       negotiation-type: PLAINTEXT
+      deadline: 5s
