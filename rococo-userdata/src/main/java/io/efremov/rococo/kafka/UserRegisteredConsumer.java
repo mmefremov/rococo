@@ -16,13 +16,10 @@ public class UserRegisteredConsumer {
   @KafkaListener(topics = "user-registered", groupId = "rococo-userdata")
   public void consumeUserRegistered(String username) {
     log.info("Received user-registered event for username: {}", username);
-    try {
-      userService.createUserIfNotExists(username);
-    } catch (IllegalArgumentException e) {
-      log.warn("Skipping invalid user registration message: {}", e.getMessage());
-    } catch (RuntimeException e) {
-      log.error("Failed to process user-registered event for username: {}", username, e);
-      throw e;
+    if (username == null || username.isBlank()) {
+      log.warn("Skipping blank username in user-registered event");
+      return;
     }
+    userService.createUserIfNotExists(username);
   }
 }
