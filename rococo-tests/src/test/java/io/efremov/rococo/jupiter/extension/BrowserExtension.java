@@ -34,6 +34,7 @@ public class BrowserExtension implements
     ChromeOptions options = new ChromeOptions()
         .addArguments("--lang=ru-RU")
         .addArguments("--no-sandbox");
+    options.setExperimentalOption("prefs", Map.of("intl.accept_languages", "ru-RU"));
 
     if (Objects.equals(System.getProperty("test.env"), "docker")) {
       Configuration.remote = "http://selenoid:4444/wd/hub";
