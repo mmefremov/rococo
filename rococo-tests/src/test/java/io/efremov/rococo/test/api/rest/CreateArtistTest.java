@@ -72,7 +72,7 @@ class CreateArtistTest {
     var response = client.createArtist(request);
 
     RestValidation.responseMustHaveConflictStatus(response);
-    String error = "Artist already exists: %s".formatted(existedArtist.name());
+    String error = "Artist name already taken: %s".formatted(existedArtist.name());
     RestValidation.bodyMustHaveTheError(response, error);
   }
 

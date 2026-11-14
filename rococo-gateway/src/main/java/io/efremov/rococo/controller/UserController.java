@@ -3,6 +3,7 @@ package io.efremov.rococo.controller;
 import io.efremov.rococo.model.UpdateUserInfoRequest;
 import io.efremov.rococo.model.UserInfoResponse;
 import io.efremov.rococo.service.GrpcUserdataClient;
+import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
@@ -30,7 +31,7 @@ public class UserController {
 
   @PatchMapping
   public UserInfoResponse updateUser(@AuthenticationPrincipal JwtClaimAccessor jwt,
-      @RequestBody UpdateUserInfoRequest request) {
+      @Valid @RequestBody UpdateUserInfoRequest request) {
     String username = jwt.getSubject();
     log.info("PATCH /api/user for username={}", username);
     return userdataClient.updateUser(username, request);
