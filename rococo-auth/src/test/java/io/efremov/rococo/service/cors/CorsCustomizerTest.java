@@ -4,7 +4,6 @@ import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
-import java.util.List;
 import java.util.Set;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -24,7 +23,7 @@ class CorsCustomizerTest {
 
   @BeforeEach
   void setUp() {
-    corsCustomizer = new CorsCustomizer(FRONT_URI, AUTH_URI, List.of());
+    corsCustomizer = new CorsCustomizer(FRONT_URI, AUTH_URI);
   }
 
   @Test

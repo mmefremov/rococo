@@ -116,6 +116,5 @@ spring:
 
 rococo-front:
   base-uri: 'http://rococo-client'
-  additional-origins: 'http://localhost:3000'
 rococo-auth:
   base-uri: 'http://rococo-auth:9000'
