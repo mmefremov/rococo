@@ -51,7 +51,7 @@ class CreateArtistTest extends BaseGrpcTest {
     GrpcValidation.checkStatusRuntimeException(
         () -> ARTIST_BLOCKING_STUB.createArtist(request),
         Status.Code.ALREADY_EXISTS,
-        "Artist already exists: %s".formatted(existedArtist.name())
+        "Artist name already taken: %s".formatted(existedArtist.name())
     );
   }
 
